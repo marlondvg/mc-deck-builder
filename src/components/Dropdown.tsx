@@ -7,7 +7,8 @@ interface Props {
   active?: boolean;
   /** Panel alignment under the trigger. */
   align?: "left" | "right";
-  children: ReactNode;
+  /** Panel content, or a function that receives `close` (for menus that close on pick). */
+  children: ReactNode | ((close: () => void) => ReactNode);
 }
 
 /** Button that opens a panel below it. Closes on outside click and Esc. */
@@ -64,7 +65,7 @@ export default function Dropdown({ label, active, align = "left", children }: Pr
             align === "right" ? "right-0" : "left-0"
           }`}
         >
-          {children}
+          {typeof children === "function" ? children(() => setOpen(false)) : children}
         </div>
       )}
     </div>

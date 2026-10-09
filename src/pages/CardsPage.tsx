@@ -6,13 +6,11 @@ import CardTile from "../components/CardTile";
 import CardModal from "../components/CardModal";
 import Dropdown, { CheckRow } from "../components/Dropdown";
 import MultiSelect from "../components/MultiSelect";
-import { factionStyle } from "../lib/factions";
+import { factionRank, factionStyle, PLAYER_ASPECTS } from "../lib/factions";
 import { firstPrintings } from "../lib/reprints";
+import { DEFAULT_SORT, SORTS, makeComparator, type SortId } from "../lib/sorting";
 
 const PAGE_SIZE = 60;
-
-// Sort by name ignoring leading quotes/punctuation ('Pool Inspection, "Avenge Me!").
-const sortKey = (name: string) => name.replace(/^[^\p{L}\p{N}]+/u, "");
 
 function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card): [string, string][] {
   const map = new Map<string, string>();
@@ -22,23 +20,6 @@ function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card): [str
   }
   return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
 }
-
-// Display order for the aspect filter. Unknown codes go last, alphabetically.
-const FACTION_ORDER = [
-  "aggression",
-  "justice",
-  "protection",
-  "leadership",
-  "basic",
-  "pool",
-  "hero",
-  "campaign",
-  "encounter",
-];
-const factionRank = (code: string) => {
-  const i = FACTION_ORDER.indexOf(code);
-  return i === -1 ? FACTION_ORDER.length : i;
-};
 
 // Multi-value filters live in the URL as comma-separated lists: ?faction=aggression,justice
 const readList = (params: URLSearchParams, key: string) =>
@@ -64,6 +45,8 @@ export default function CardsPage() {
   const encounter = params.get("encounter") === "1";
   const showNoImage = params.get("noimg") === "1";
   const showReprints = params.get("reprints") === "1";
+  const sortParam = params.get("sort");
+  const sort: SortId = SORTS.some((s) => s.id === sortParam) ? (sortParam as SortId) : DEFAULT_SORT;
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -107,8 +90,12 @@ export default function CardsPage() {
     const ps = new Set(packKey.split(",").filter(Boolean));
     const needle = q.trim().toLowerCase();
 
+    // No aspect picked: only player-aspect cards (plus encounter if that
+    // option is on). Hero and campaign cards show when picked explicitly.
+    const defaultFactions = new Set(encounter ? [...PLAYER_ASPECTS, "encounter"] : PLAYER_ASPECTS);
+
     const matches = base.filter((c) => {
-      if (fs.size && !fs.has(c.faction_code)) return false;
+      if (fs.size ? !fs.has(c.faction_code) : !defaultFactions.has(c.faction_code)) return false;
       if (ts.size && !ts.has(c.type_code)) return false;
       if (ps.size && !ps.has(c.pack_code)) return false;
       if (!needle) return true;
@@ -120,13 +107,13 @@ export default function CardsPage() {
     // Reprints are collapsed after filtering, so picking a newer pack still
     // shows that pack's printing.
     const result = showReprints ? matches : firstPrintings(matches, packList);
-    return result.sort((a, b) => sortKey(a.name).localeCompare(sortKey(b.name)));
-  }, [base, q, factionKey, typeKey, packKey, showReprints, packList]);
+    return result.sort(makeComparator(sort, packList));
+  }, [base, q, factionKey, typeKey, packKey, showReprints, packList, encounter, sort]);
 
   // Go back to the first page whenever the filters change.
   useEffect(
     () => setVisible(PAGE_SIZE),
-    [q, factionKey, typeKey, packKey, encounter, showNoImage, showReprints],
+    [q, factionKey, typeKey, packKey, encounter, showNoImage, showReprints, sort],
   );
 
   const hasFilters = !!(q || factionKey || typeKey || packKey);
@@ -212,6 +199,34 @@ export default function CardsPage() {
           onChange={(v) => setList("pack", v)}
           searchable
         />
+        <Dropdown label={`Ordenar: ${SORTS.find((s) => s.id === sort)!.short}`} active={sort !== DEFAULT_SORT}>
+          {(close) => (
+            <div role="menu" aria-label="Ordenar cartas">
+              {SORTS.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={s.id === sort}
+                  onClick={() => {
+                    setParam("sort", s.id === DEFAULT_SORT ? "" : s.id);
+                    close();
+                  }}
+                  className={`flex min-h-10 w-full items-center justify-between gap-3 rounded-[10px] px-3 text-left text-[15px] hover:bg-amber-soft ${
+                    s.id === sort ? "font-bold" : ""
+                  }`}
+                >
+                  {s.label}
+                  {s.id === sort && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f4c5c" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </Dropdown>
         <Dropdown
           label={optionsOn ? `Opciones (${optionsOn})` : "Opciones"}
           active={optionsOn > 0}
@@ -233,6 +248,7 @@ export default function CardsPage() {
               // Keep the display options, clear search and filters.
               const next = new URLSearchParams();
               for (const o of OPTIONS) if (params.get(o.key) === "1") next.set(o.key, "1");
+              if (sortParam) next.set("sort", sortParam);
               setParams(next, { replace: true });
             }}
             className="text-sm font-bold text-petrol hover:underline"

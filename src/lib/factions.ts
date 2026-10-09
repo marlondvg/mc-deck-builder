@@ -14,3 +14,14 @@ export const FACTION_STYLES: Record<string, { badge: string; fill: string }> = {
 const FALLBACK = { badge: "bg-basic text-ink", fill: "bg-basic" };
 
 export const factionStyle = (code: string) => FACTION_STYLES[code] ?? FALLBACK;
+
+/** Player aspects, shown by default in the card list. */
+export const PLAYER_ASPECTS = ["aggression", "justice", "protection", "leadership", "basic", "pool"];
+
+// Display/sort order for factions. Unknown codes go last.
+const FACTION_ORDER = [...PLAYER_ASPECTS, "hero", "campaign", "encounter"];
+
+export const factionRank = (code: string) => {
+  const i = FACTION_ORDER.indexOf(code);
+  return i === -1 ? FACTION_ORDER.length : i;
+};
