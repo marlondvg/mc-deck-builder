@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useCards } from "../api/hooks";
 import type { Card } from "../api/types";
 import CardTile from "../components/CardTile";
+import CardModal from "../components/CardModal";
 
 const PAGE_SIZE = 60;
 
 const selectClass = "field";
+
+// Sort by name ignoring leading quotes/punctuation ('Pool Inspection, "Avenge Me!").
+const sortKey = (name: string) => name.replace(/^[^\p{L}\p{N}]+/u, "");
 
 function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card) {
   const map = new Map<string, string>();
@@ -60,13 +64,49 @@ export default function CardsPage() {
           .filter(Boolean)
           .some((f) => f!.toLowerCase().includes(needle));
       })
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => sortKey(a.name).localeCompare(sortKey(b.name)));
   }, [base, q, faction, type, pack]);
 
   // Go back to the first page whenever the filters change.
   useEffect(() => setVisible(PAGE_SIZE), [q, faction, type, pack, encounter]);
 
   const hasFilters = !!(q || faction || type || pack);
+
+  // ---- Card modal: the open card lives in ?card=CODE so filters stay put,
+  // the browser Back button closes it, and the URL can be shared.
+  const navigate = useNavigate();
+  const location = useLocation();
+  const openCode = params.get("card");
+
+  const withCard = useCallback(
+    (code: string | null) => {
+      const next = new URLSearchParams(params);
+      if (code) next.set("card", code);
+      else next.delete("card");
+      return `?${next.toString()}`;
+    },
+    [params],
+  );
+
+  const openIndex = openCode ? filtered.findIndex((c) => c.code === openCode) : -1;
+  const openCard = openIndex >= 0 ? filtered[openIndex] : cards?.find((c) => c.code === openCode);
+
+  const closeModal = useCallback(() => {
+    // Opened from the grid: step back so history doesn't keep the modal entry.
+    if ((location.state as { fromGrid?: boolean } | null)?.fromGrid) navigate(-1);
+    else navigate({ search: withCard(null) }, { replace: true });
+  }, [location.state, navigate, withCard]);
+
+  const goTo = useCallback(
+    (index: number) => {
+      const target = filtered[index];
+      if (!target) return;
+      // Reveal more of the grid if the arrows walk past what's shown.
+      setVisible((v) => Math.max(v, index + 1));
+      navigate({ search: withCard(target.code) }, { replace: true, state: location.state });
+    },
+    [filtered, navigate, withCard, location.state],
+  );
 
   return (
     <div className="space-y-5">
@@ -154,7 +194,11 @@ export default function CardsPage() {
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-5">
               {filtered.slice(0, visible).map((card) => (
-                <CardTile key={card.code} card={card} />
+                <CardTile
+                  key={card.code}
+                  card={card}
+                  to={{ search: withCard(card.code) }}
+                />
               ))}
             </div>
           )}
@@ -170,6 +214,21 @@ export default function CardsPage() {
             </div>
           )}
         </>
+      )}
+
+      {openCode && (
+        <CardModal
+          key={openCode}
+          code={openCode}
+          card={openCard}
+          onClose={closeModal}
+          onPrev={openIndex > 0 ? () => goTo(openIndex - 1) : undefined}
+          onNext={
+            openIndex >= 0 && openIndex < filtered.length - 1
+              ? () => goTo(openIndex + 1)
+              : undefined
+          }
+        />
       )}
     </div>
   );

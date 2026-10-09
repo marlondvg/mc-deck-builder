@@ -1,24 +1,29 @@
-import { Link } from "react-router-dom";
+import { Link, type To } from "react-router-dom";
 import type { Card } from "../api/types";
 import { cardImageUrl } from "../api/marvelcdb";
 import { factionStyle } from "../lib/factions";
 
-export default function CardTile({ card }: { card: Card }) {
+export default function CardTile({ card, to }: { card: Card; to: To }) {
   const img = cardImageUrl(card);
   const style = factionStyle(card.faction_code);
 
   return (
     <Link
-      to={`/card/${card.code}`}
+      to={to}
+      state={{ fromGrid: true }}
       className="panel group flex flex-col overflow-hidden text-ink no-underline transition hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-comic-lg"
     >
       {img ? (
-        <img
-          src={img}
-          alt={card.name}
-          loading="lazy"
-          className="aspect-[5/7] w-full border-b-[3px] border-ink bg-canvas object-cover"
-        />
+        // object-contain shows the whole card (no cropping). Landscape cards,
+        // like schemes, are letterboxed instead of cut off.
+        <div className="flex aspect-[5/7] w-full items-center justify-center border-b-[3px] border-ink bg-canvas p-2">
+          <img
+            src={img}
+            alt={card.name}
+            loading="lazy"
+            className="max-h-full max-w-full rounded-md object-contain"
+          />
+        </div>
       ) : (
         <div
           className={`comic-fill ${style.fill} flex aspect-[5/7] w-full items-end border-b-[3px] border-ink p-3`}
