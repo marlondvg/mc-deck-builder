@@ -2,9 +2,6 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
-const inputClass =
-  "w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-marvel focus:ring-2 focus:ring-marvel/20";
-
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -22,36 +19,38 @@ export default function LoginPage() {
   return (
     <form
       onSubmit={onSubmit}
-      className="mx-auto mt-10 max-w-sm space-y-4 rounded-2xl border border-ink/10 bg-white p-6 shadow-sm"
+      className="panel mx-auto mt-10 flex max-w-[440px] flex-col gap-5 rounded-[20px] p-10 shadow-[8px_8px_0_#141414]"
     >
-      <h1 className="font-display text-3xl tracking-wide">Log in</h1>
-      <label className="block space-y-1 text-sm font-medium">
-        Username
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-3xl font-bold">Iniciar sesión</h1>
+        <p className="text-[15px] text-muted">Entra para ver tu colección y tus mazos.</p>
+      </div>
+      <label className="flex flex-col gap-2">
+        <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-muted">Usuario</span>
         <input
-          className={inputClass}
+          className="field h-[50px] w-full"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder="tu_usuario"
           autoComplete="username"
         />
       </label>
-      <label className="block space-y-1 text-sm font-medium">
-        Password
+      <label className="flex flex-col gap-2">
+        <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-muted">Contraseña</span>
         <input
           type="password"
-          className={inputClass}
+          className="field h-[50px] w-full"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
           autoComplete="current-password"
         />
       </label>
-      <button
-        type="submit"
-        className="w-full rounded-full bg-marvel py-2 font-semibold text-white hover:bg-marvel-dark"
-      >
-        Log in
+      <button type="submit" className="btn-primary h-[52px] text-[17px]">
+        Entrar
       </button>
-      <p className="text-xs text-slate-400">
-        Temporary: any username works until the backend is connected.
+      <p className="text-xs text-subtle">
+        Temporal: cualquier usuario funciona hasta conectar el backend.
       </p>
     </form>
   );

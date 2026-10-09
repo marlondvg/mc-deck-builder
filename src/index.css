@@ -1,29 +1,127 @@
 @import "tailwindcss";
 
+/* Palette "Petróleo + ámbar" from the Deck Builder design canvas. */
 @theme {
-  --font-display: "Bebas Neue", Impact, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Anton", Impact, sans-serif;
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
 
-  --color-marvel: #ec1d24;
-  --color-marvel-dark: #b3121a;
-  --color-ink: #151a27;
+  --color-ink: #141414;
+  --color-muted: #444444;
+  --color-subtle: #555555;
+  --color-canvas: #e2e6e8;
+  --color-dot: #c3cbcf;
 
-  --color-aggression: #d9342b;
-  --color-justice: #f2b705;
-  --color-leadership: #1e88e5;
-  --color-protection: #2e9e5b;
-  --color-pool: #e0457b;
-  --color-basic: #6b7280;
-  --color-hero: #5b3cc4;
+  --color-petrol: #0f4c5c;
+  --color-petrol-dark: #0a3a46;
+  --color-petrol-muted: #bfd6dc;
+  --color-amber: #ffb703;
+  --color-amber-soft: #fff1cc;
+  --color-danger: #b3161b;
+
+  /* Aspect colors */
+  --color-aggression: #c8161d;
+  --color-justice: #f5e11a;
+  --color-leadership: #22a3cc;
+  --color-protection: #3fa535;
+  --color-basic: #a3a3a3;
+  --color-pool: #ff3d7f;
+  --color-hero: #1e88e5;
+
+  --shadow-comic-sm: 3px 3px 0 #141414;
+  --shadow-comic: 4px 4px 0 #141414;
+  --shadow-comic-lg: 6px 6px 0 #141414;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background:
-    radial-gradient(1200px 400px at 10% -10%, #ffe4e5 0%, transparent 60%),
-    radial-gradient(900px 400px at 100% 0%, #e3efff 0%, transparent 55%),
-    #f7f8fb;
+  background-color: var(--color-canvas);
+  background-image: radial-gradient(var(--color-dot) 1.5px, transparent 2px);
+  background-size: 12px 12px;
   min-height: 100vh;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-petrol);
+  outline-offset: 2px;
+}
+
+@layer components {
+  /* White panel with ink border and hard comic shadow */
+  .panel {
+    background: #ffffff;
+    border: 2px solid var(--color-ink);
+    border-radius: 16px;
+    box-shadow: var(--shadow-comic);
+  }
+
+  .field {
+    height: 48px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 2px solid var(--color-ink);
+    background: #ffffff;
+    color: var(--color-ink);
+    font: inherit;
+    font-size: 15px;
+  }
+  .field::placeholder {
+    color: #6b6b6b;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 12px;
+    border: 2px solid var(--color-ink);
+    background: var(--color-amber);
+    color: var(--color-ink);
+    font-weight: 700;
+    box-shadow: var(--shadow-comic-sm);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.95);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 12px;
+    border: 2px solid var(--color-ink);
+    background: #ffffff;
+    color: var(--color-ink);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-subtle);
+  }
+
+  /* Ben-day dots + sheen used on card art blocks */
+  .comic-fill {
+    background-image:
+      radial-gradient(#00000033 1.6px, transparent 2.1px),
+      radial-gradient(#00000033 1.6px, transparent 2.1px),
+      linear-gradient(160deg, #ffffff59 0%, #ffffff00 40%, #00000047 100%);
+    background-size: 10px 10px, 10px 10px, auto;
+    background-position: 0 0, 5px 5px, 0 0;
+  }
 }

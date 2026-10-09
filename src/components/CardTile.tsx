@@ -10,26 +10,29 @@ export default function CardTile({ card }: { card: Card }) {
   return (
     <Link
       to={`/card/${card.code}`}
-      className="group overflow-hidden rounded-xl border border-ink/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="panel group flex flex-col overflow-hidden text-ink no-underline transition hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-comic-lg"
     >
-      <div className={`h-1.5 ${style.bar}`} />
       {img ? (
         <img
           src={img}
           alt={card.name}
           loading="lazy"
-          className="aspect-[5/7] w-full bg-slate-100 object-cover"
+          className="aspect-[5/7] w-full border-b-[3px] border-ink bg-canvas object-cover"
         />
       ) : (
-        <div className="flex aspect-[5/7] w-full items-center justify-center bg-slate-100 p-3 text-center text-sm text-slate-500">
-          No image available
+        <div
+          className={`comic-fill ${style.fill} flex aspect-[5/7] w-full items-end border-b-[3px] border-ink p-3`}
+        >
+          <span className="w-full -skew-x-6 border-[3px] border-ink bg-white px-2 py-1 text-center font-display text-lg uppercase shadow-comic-sm">
+            {card.type_name}
+          </span>
         </div>
       )}
-      <div className="space-y-1 p-3">
-        <p className="truncate text-sm font-semibold group-hover:text-marvel">{card.name}</p>
-        <div className="flex items-center justify-between text-xs text-slate-500">
+      <div className="flex flex-col gap-1.5 px-3.5 pb-3.5 pt-3">
+        <p className="truncate text-base font-bold group-hover:text-petrol">{card.name}</p>
+        <div className="flex items-center justify-between gap-2 text-sm text-muted">
           <span className="truncate">{card.type_name}</span>
-          <span className={`rounded-full px-2 py-0.5 font-medium ${style.badge}`}>
+          <span className={`shrink-0 rounded-md border-2 border-ink px-2 py-0.5 text-xs font-bold ${style.badge}`}>
             {card.faction_name}
           </span>
         </div>

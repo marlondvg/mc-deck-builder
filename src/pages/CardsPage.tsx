@@ -6,8 +6,7 @@ import CardTile from "../components/CardTile";
 
 const PAGE_SIZE = 60;
 
-const selectClass =
-  "rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-marvel focus:ring-2 focus:ring-marvel/20";
+const selectClass = "field";
 
 function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card) {
   const map = new Map<string, string>();
@@ -71,23 +70,26 @@ export default function CardsPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="font-display text-4xl tracking-wide">Browse cards</h1>
-        <p className="text-sm text-slate-500">
-          Search every Marvel Champions card. Data from MarvelCDB.
-        </p>
+      <div className="flex flex-col gap-1.5">
+        {cards && (
+          <span className="eyebrow">{filtered.length.toLocaleString()} cartas</span>
+        )}
+        <h1 className="font-display text-5xl uppercase leading-none tracking-wide sm:text-6xl">
+          Todas las cartas
+        </h1>
+        <p className="text-sm text-muted">Datos de MarvelCDB.</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
+      <div className="panel flex flex-wrap items-center gap-3 p-4">
         <input
           type="search"
           value={q}
           onChange={(e) => setParam("q", e.target.value)}
-          placeholder="Search name, traits or text…"
+          placeholder="Buscar por nombre, rasgos o texto…"
           className={`${selectClass} min-w-64 flex-1`}
         />
         <select value={faction} onChange={(e) => setParam("faction", e.target.value)} className={selectClass}>
-          <option value="">All aspects</option>
+          <option value="">Todos los aspectos</option>
           {factions.map(([code, name]) => (
             <option key={code} value={code}>
               {name}
@@ -95,7 +97,7 @@ export default function CardsPage() {
           ))}
         </select>
         <select value={type} onChange={(e) => setParam("type", e.target.value)} className={selectClass}>
-          <option value="">All types</option>
+          <option value="">Todos los tipos</option>
           {types.map(([code, name]) => (
             <option key={code} value={code}>
               {name}
@@ -103,20 +105,21 @@ export default function CardsPage() {
           ))}
         </select>
         <select value={pack} onChange={(e) => setParam("pack", e.target.value)} className={selectClass}>
-          <option value="">All packs</option>
+          <option value="">Todos los packs</option>
           {packs.map(([code, name]) => (
             <option key={code} value={code}>
               {name}
             </option>
           ))}
         </select>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input
             type="checkbox"
+            className="h-[18px] w-[18px] accent-petrol"
             checked={encounter}
             onChange={(e) => setParam("encounter", e.target.checked ? "1" : "")}
           />
-          Include encounter cards
+          Incluir cartas de encuentro
         </label>
         {hasFilters && (
           <button
@@ -125,38 +128,31 @@ export default function CardsPage() {
               if (encounter) next.set("encounter", "1");
               setParams(next, { replace: true });
             }}
-            className="text-sm font-medium text-marvel hover:underline"
+            className="text-sm font-bold text-petrol hover:underline"
           >
-            Clear filters
+            Limpiar filtros
           </button>
         )}
       </div>
 
-      {isLoading && <p className="py-16 text-center text-slate-500">Loading cards…</p>}
+      {isLoading && <p className="py-16 text-center text-muted">Cargando cartas…</p>}
 
       {isError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-          <p className="font-medium text-red-700">Couldn't load cards.</p>
-          <p className="mt-1 text-sm text-red-600">{(error as Error).message}</p>
-          <button
-            onClick={() => refetch()}
-            className="mt-3 rounded-full bg-marvel px-4 py-1.5 text-sm font-semibold text-white hover:bg-marvel-dark"
-          >
-            Try again
+        <div className="panel p-6 text-center">
+          <p className="font-bold text-danger">No se pudieron cargar las cartas.</p>
+          <p className="mt-1 text-sm text-muted">{(error as Error).message}</p>
+          <button onClick={() => refetch()} className="btn-primary mt-4">
+            Reintentar
           </button>
         </div>
       )}
 
       {cards && (
         <>
-          <p className="text-sm text-slate-500">
-            {filtered.length.toLocaleString()} card{filtered.length === 1 ? "" : "s"}
-          </p>
-
           {filtered.length === 0 ? (
-            <p className="py-16 text-center text-slate-500">No cards match those filters.</p>
+            <p className="py-16 text-center text-muted">Ninguna carta coincide con esos filtros.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-5">
               {filtered.slice(0, visible).map((card) => (
                 <CardTile key={card.code} card={card} />
               ))}
@@ -167,9 +163,9 @@ export default function CardsPage() {
             <div className="flex justify-center pt-2">
               <button
                 onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                className="rounded-full border border-ink/15 bg-white px-6 py-2 text-sm font-semibold hover:border-marvel hover:text-marvel"
+                className="btn-secondary shadow-comic-sm"
               >
-                Show more ({filtered.length - visible} left)
+                Ver más ({filtered.length - visible} restantes)
               </button>
             </div>
           )}

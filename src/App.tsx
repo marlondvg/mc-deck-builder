@@ -17,7 +17,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="*"
-            element={<p className="py-20 text-center text-slate-500">Page not found.</p>}
+            element={<p className="py-20 text-center text-muted">Página no encontrada.</p>}
           />
         </Routes>
       </main>

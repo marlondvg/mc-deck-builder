@@ -3,9 +3,20 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-full px-3 py-1.5 text-sm font-medium transition ${
-    isActive ? "bg-marvel text-white" : "text-ink/70 hover:bg-ink/5"
+  `rounded-[10px] px-4 py-2.5 text-[15px] font-bold transition ${
+    isActive ? "bg-amber text-ink" : "text-petrol-muted hover:text-white"
   }`;
+
+function LogoMark() {
+  return (
+    <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-amber">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+        <rect x="4" y="6" width="12" height="15" rx="2" />
+        <path d="M8 3h10a2 2 0 0 1 2 2v12" />
+      </svg>
+    </span>
+  );
+}
 
 export default function Header() {
   const { username, logout } = useAuth();
@@ -24,44 +35,56 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-ink/10 bg-white/85 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="rounded bg-marvel px-2 py-0.5 font-display text-2xl leading-none tracking-wide text-white">
-            MC
+    <header className="sticky top-0 z-20 border-b-[3px] border-ink bg-petrol">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-3 px-4 py-3.5 sm:px-10">
+        <Link to="/" className="flex items-center gap-3 no-underline">
+          <LogoMark />
+          <span className="font-display text-[28px] tracking-wide text-white sm:text-[32px]">
+            MC DECK BUILDER
           </span>
-          <span className="font-display text-2xl tracking-wide">Deck Builder</span>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        <nav className="flex flex-1 flex-wrap gap-1.5">
           <NavLink to="/" end className={navClass}>
-            Cards
+            Cartas
           </NavLink>
-          {/* Decks link arrives with the deck builder */}
+          {/* "Mis mazos" / "Crear mazo" links arrive with the deck builder */}
         </nav>
 
-        <div className="ml-auto" ref={menuRef}>
+        <div ref={menuRef}>
           {username ? (
-            <div className="relative">
+            <div className="relative border-l-2 border-white/20 pl-5">
               <button
                 onClick={() => setOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                className="flex items-center gap-2 rounded-full border border-ink/15 bg-white px-3 py-1.5 text-sm font-medium hover:border-marvel"
+                aria-label="Menú de cuenta"
+                className="flex min-h-12 items-center gap-2.5 rounded-full border-2 border-amber bg-petrol-dark py-1 pl-1 pr-3.5 shadow-comic-sm"
               >
-                {username}
-                <span aria-hidden className="text-xs">▾</span>
+                <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 border-ink bg-amber">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+                  </svg>
+                </span>
+                <span className="flex flex-col text-left leading-tight">
+                  <span className="text-[11px] font-bold tracking-[0.14em] text-amber">MI CUENTA</span>
+                  <span className="text-[15px] font-bold text-white">{username}</span>
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
               {open && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-lg"
+                  className="panel absolute right-0 top-[calc(100%+8px)] z-30 flex min-w-[220px] flex-col gap-1 rounded-[14px] p-2"
                 >
                   <Link
                     role="menuitem"
                     to="/collection"
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-2.5 text-sm hover:bg-ink/5"
+                    className="flex min-h-11 items-center rounded-[10px] px-3.5 text-[15px] font-bold text-ink hover:bg-amber-soft"
                   >
                     Mi colección
                   </Link>
@@ -72,7 +95,7 @@ export default function Header() {
                       logout();
                       navigate("/");
                     }}
-                    className="block w-full px-4 py-2.5 text-left text-sm text-marvel-dark hover:bg-ink/5"
+                    className="flex min-h-11 items-center rounded-[10px] px-3.5 text-left text-[15px] font-bold text-danger hover:bg-amber-soft"
                   >
                     Salir
                   </button>
@@ -80,11 +103,8 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="rounded-full bg-marvel px-4 py-1.5 text-sm font-semibold text-white hover:bg-marvel-dark"
-            >
-              Log in
+            <Link to="/login" className="btn-primary">
+              Iniciar sesión
             </Link>
           )}
         </div>
