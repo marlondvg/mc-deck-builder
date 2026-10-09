@@ -14,16 +14,16 @@ export default function CardTile({ card, to }: { card: Card; to: To }) {
       className="panel group flex flex-col overflow-hidden text-ink no-underline transition hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-comic-lg"
     >
       {img ? (
-        // object-contain shows the whole card (no cropping). Landscape cards,
-        // like schemes, are letterboxed instead of cut off.
-        <div className="flex aspect-[5/7] w-full items-center justify-center border-b-[3px] border-ink bg-canvas p-2">
-          <img
-            src={img}
-            alt={card.name}
-            loading="lazy"
-            className="max-h-full max-w-full rounded-md object-contain"
-          />
-        </div>
+        // Full card at its natural proportions: fills the tile width with no
+        // cropping and no letterbox margin. Width/height hint avoids layout jump.
+        <img
+          src={img}
+          alt={card.name}
+          loading="lazy"
+          width={710}
+          height={1000}
+          className="block h-auto w-full border-b-[3px] border-ink bg-canvas"
+        />
       ) : (
         <div
           className={`comic-fill ${style.fill} flex aspect-[5/7] w-full items-end border-b-[3px] border-ink p-3`}

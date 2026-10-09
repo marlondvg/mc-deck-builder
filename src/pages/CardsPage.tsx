@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { useCards } from "../api/hooks";
+import { useCards, usePacks } from "../api/hooks";
 import type { Card } from "../api/types";
 import CardTile from "../components/CardTile";
 import CardModal from "../components/CardModal";
+import Dropdown, { CheckRow } from "../components/Dropdown";
+import MultiSelect from "../components/MultiSelect";
+import { factionStyle } from "../lib/factions";
+import { firstPrintings } from "../lib/reprints";
 
 const PAGE_SIZE = 60;
-
-const selectClass = "field";
 
 // Sort by name ignoring leading quotes/punctuation ('Pool Inspection, "Avenge Me!").
 const sortKey = (name: string) => name.replace(/^[^\p{L}\p{N}]+/u, "");
 
-function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card) {
+function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card): [string, string][] {
   const map = new Map<string, string>();
   for (const c of cards) {
     const k = c[code] as string | undefined;
@@ -21,16 +23,46 @@ function uniqueOptions(cards: Card[], code: keyof Card, label: keyof Card) {
   return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
 }
 
+// Display order for the aspect filter. Unknown codes go last, alphabetically.
+const FACTION_ORDER = [
+  "aggression",
+  "justice",
+  "protection",
+  "leadership",
+  "basic",
+  "pool",
+  "hero",
+  "encounter",
+];
+const factionRank = (code: string) => {
+  const i = FACTION_ORDER.indexOf(code);
+  return i === -1 ? FACTION_ORDER.length : i;
+};
+
+// Multi-value filters live in the URL as comma-separated lists: ?faction=aggression,justice
+const readList = (params: URLSearchParams, key: string) =>
+  (params.get(key) ?? "").split(",").filter(Boolean);
+
+// Checkbox options. Keys are URL params set to "1" when on; add new ones here.
+const OPTIONS = [
+  { key: "encounter", label: "Incluir cartas de encuentro" },
+  { key: "noimg", label: "Mostrar cartas sin imagen" },
+  { key: "reprints", label: "Mostrar reimpresiones (arte nuevo)" },
+] as const;
+
 export default function CardsPage() {
   const { data: cards, isLoading, isError, error, refetch } = useCards();
+  const { data: packList } = usePacks();
   const [params, setParams] = useSearchParams();
   const [visible, setVisible] = useState(PAGE_SIZE);
 
   const q = params.get("q") ?? "";
-  const faction = params.get("faction") ?? "";
-  const type = params.get("type") ?? "";
-  const pack = params.get("pack") ?? "";
+  const factionSel = readList(params, "faction");
+  const typeSel = readList(params, "type");
+  const packSel = readList(params, "pack");
   const encounter = params.get("encounter") === "1";
+  const showNoImage = params.get("noimg") === "1";
+  const showReprints = params.get("reprints") === "1";
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -38,39 +70,66 @@ export default function CardsPage() {
     else next.delete(key);
     setParams(next, { replace: true });
   };
+  const setList = (key: string, values: string[]) => setParam(key, values.join(","));
 
   // Cards the user can actually build with, unless encounter cards are requested.
+  // Cards without an image are hidden unless the user asks for them.
   const base = useMemo(
     () =>
       (cards ?? []).filter(
-        (c) => !c.duplicate_of && (encounter || c.faction_code !== "encounter"),
+        (c) =>
+          !c.duplicate_of &&
+          (encounter || c.faction_code !== "encounter") &&
+          (showNoImage || !!c.imagesrc),
       ),
-    [cards, encounter],
+    [cards, encounter, showNoImage],
   );
 
-  const factions = useMemo(() => uniqueOptions(base, "faction_code", "faction_name"), [base]);
+  const factions = useMemo(
+    () =>
+      uniqueOptions(base, "faction_code", "faction_name").sort(
+        (a, b) => factionRank(a[0]) - factionRank(b[0]) || a[1].localeCompare(b[1]),
+      ),
+    [base],
+  );
   const types = useMemo(() => uniqueOptions(base, "type_code", "type_name"), [base]);
   const packs = useMemo(() => uniqueOptions(base, "pack_code", "pack_name"), [base]);
 
+  // Stable string keys so the memo below doesn't rerun on every render.
+  const factionKey = factionSel.join(",");
+  const typeKey = typeSel.join(",");
+  const packKey = packSel.join(",");
+
   const filtered = useMemo(() => {
+    const fs = new Set(factionKey.split(",").filter(Boolean));
+    const ts = new Set(typeKey.split(",").filter(Boolean));
+    const ps = new Set(packKey.split(",").filter(Boolean));
     const needle = q.trim().toLowerCase();
-    return base
-      .filter((c) => {
-        if (faction && c.faction_code !== faction) return false;
-        if (type && c.type_code !== type) return false;
-        if (pack && c.pack_code !== pack) return false;
-        if (!needle) return true;
-        return [c.name, c.subname, c.traits, c.text]
-          .filter(Boolean)
-          .some((f) => f!.toLowerCase().includes(needle));
-      })
-      .sort((a, b) => sortKey(a.name).localeCompare(sortKey(b.name)));
-  }, [base, q, faction, type, pack]);
+
+    const matches = base.filter((c) => {
+      if (fs.size && !fs.has(c.faction_code)) return false;
+      if (ts.size && !ts.has(c.type_code)) return false;
+      if (ps.size && !ps.has(c.pack_code)) return false;
+      if (!needle) return true;
+      return [c.name, c.subname, c.traits, c.text]
+        .filter(Boolean)
+        .some((f) => f!.toLowerCase().includes(needle));
+    });
+
+    // Reprints are collapsed after filtering, so picking a newer pack still
+    // shows that pack's printing.
+    const result = showReprints ? matches : firstPrintings(matches, packList);
+    return result.sort((a, b) => sortKey(a.name).localeCompare(sortKey(b.name)));
+  }, [base, q, factionKey, typeKey, packKey, showReprints, packList]);
 
   // Go back to the first page whenever the filters change.
-  useEffect(() => setVisible(PAGE_SIZE), [q, faction, type, pack, encounter]);
+  useEffect(
+    () => setVisible(PAGE_SIZE),
+    [q, factionKey, typeKey, packKey, encounter, showNoImage, showReprints],
+  );
 
-  const hasFilters = !!(q || faction || type || pack);
+  const hasFilters = !!(q || factionKey || typeKey || packKey);
+  const optionsOn = OPTIONS.filter((o) => params.get(o.key) === "1").length;
 
   // ---- Card modal: the open card lives in ?card=CODE so filters stay put,
   // the browser Back button closes it, and the URL can be shared.
@@ -126,46 +185,53 @@ export default function CardsPage() {
           value={q}
           onChange={(e) => setParam("q", e.target.value)}
           placeholder="Buscar por nombre, rasgos o texto…"
-          className={`${selectClass} min-w-64 flex-1`}
+          aria-label="Buscar cartas"
+          className="field min-w-64 flex-1"
         />
-        <select value={faction} onChange={(e) => setParam("faction", e.target.value)} className={selectClass}>
-          <option value="">Todos los aspectos</option>
-          {factions.map(([code, name]) => (
-            <option key={code} value={code}>
-              {name}
-            </option>
+        <MultiSelect
+          label="Aspectos"
+          allLabel="Todos los aspectos"
+          options={factions}
+          selected={factionSel}
+          onChange={(v) => setList("faction", v)}
+          swatchClass={(code) => factionStyle(code).fill}
+        />
+        <MultiSelect
+          label="Tipos"
+          allLabel="Todos los tipos"
+          options={types}
+          selected={typeSel}
+          onChange={(v) => setList("type", v)}
+        />
+        <MultiSelect
+          label="Packs"
+          allLabel="Todos los packs"
+          options={packs}
+          selected={packSel}
+          onChange={(v) => setList("pack", v)}
+          searchable
+        />
+        <Dropdown
+          label={optionsOn ? `Opciones (${optionsOn})` : "Opciones"}
+          active={optionsOn > 0}
+          align="right"
+        >
+          {OPTIONS.map((o) => (
+            <CheckRow
+              key={o.key}
+              checked={params.get(o.key) === "1"}
+              onChange={(on) => setParam(o.key, on ? "1" : "")}
+            >
+              {o.label}
+            </CheckRow>
           ))}
-        </select>
-        <select value={type} onChange={(e) => setParam("type", e.target.value)} className={selectClass}>
-          <option value="">Todos los tipos</option>
-          {types.map(([code, name]) => (
-            <option key={code} value={code}>
-              {name}
-            </option>
-          ))}
-        </select>
-        <select value={pack} onChange={(e) => setParam("pack", e.target.value)} className={selectClass}>
-          <option value="">Todos los packs</option>
-          {packs.map(([code, name]) => (
-            <option key={code} value={code}>
-              {name}
-            </option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <input
-            type="checkbox"
-            className="h-[18px] w-[18px] accent-petrol"
-            checked={encounter}
-            onChange={(e) => setParam("encounter", e.target.checked ? "1" : "")}
-          />
-          Incluir cartas de encuentro
-        </label>
+        </Dropdown>
         {hasFilters && (
           <button
             onClick={() => {
+              // Keep the display options, clear search and filters.
               const next = new URLSearchParams();
-              if (encounter) next.set("encounter", "1");
+              for (const o of OPTIONS) if (params.get(o.key) === "1") next.set(o.key, "1");
               setParams(next, { replace: true });
             }}
             className="text-sm font-bold text-petrol hover:underline"
