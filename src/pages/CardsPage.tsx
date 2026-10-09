@@ -32,6 +32,7 @@ const FACTION_ORDER = [
   "basic",
   "pool",
   "hero",
+  "campaign",
   "encounter",
 ];
 const factionRank = (code: string) => {

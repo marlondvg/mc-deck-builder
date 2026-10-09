@@ -7,7 +7,8 @@ export const FACTION_STYLES: Record<string, { badge: string; fill: string }> = {
   protection: { badge: "bg-protection text-ink", fill: "bg-protection" },
   basic: { badge: "bg-basic text-ink", fill: "bg-basic" },
   pool: { badge: "bg-pool text-ink", fill: "bg-pool" },
-  hero: { badge: "bg-hero text-white", fill: "bg-hero" },
+  hero: { badge: "bg-hero text-ink", fill: "bg-hero" },
+  campaign: { badge: "bg-campaign text-white", fill: "bg-campaign" },
 };
 
 const FALLBACK = { badge: "bg-basic text-ink", fill: "bg-basic" };
