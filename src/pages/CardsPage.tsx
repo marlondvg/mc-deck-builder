@@ -6,7 +6,7 @@ import CardTile from "../components/CardTile";
 import CardModal from "../components/CardModal";
 import Dropdown, { CheckRow } from "../components/Dropdown";
 import MultiSelect from "../components/MultiSelect";
-import { factionRank, factionStyle, PLAYER_ASPECTS } from "../lib/factions";
+import { factionRank, factionStyle } from "../lib/factions";
 import { firstPrintings } from "../lib/reprints";
 import { DEFAULT_SORT, SORTS, makeComparator, type SortId } from "../lib/sorting";
 
@@ -90,12 +90,8 @@ export default function CardsPage() {
     const ps = new Set(packKey.split(",").filter(Boolean));
     const needle = q.trim().toLowerCase();
 
-    // No aspect picked: only player-aspect cards (plus encounter if that
-    // option is on). Hero and campaign cards show when picked explicitly.
-    const defaultFactions = new Set(encounter ? [...PLAYER_ASPECTS, "encounter"] : PLAYER_ASPECTS);
-
     const matches = base.filter((c) => {
-      if (fs.size ? !fs.has(c.faction_code) : !defaultFactions.has(c.faction_code)) return false;
+      if (fs.size && !fs.has(c.faction_code)) return false;
       if (ts.size && !ts.has(c.type_code)) return false;
       if (ps.size && !ps.has(c.pack_code)) return false;
       if (!needle) return true;
@@ -108,7 +104,7 @@ export default function CardsPage() {
     // shows that pack's printing.
     const result = showReprints ? matches : firstPrintings(matches, packList);
     return result.sort(makeComparator(sort, packList));
-  }, [base, q, factionKey, typeKey, packKey, showReprints, packList, encounter, sort]);
+  }, [base, q, factionKey, typeKey, packKey, showReprints, packList, sort]);
 
   // Go back to the first page whenever the filters change.
   useEffect(

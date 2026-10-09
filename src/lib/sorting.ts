@@ -17,7 +17,7 @@ export const SORTS = [
 ] as const;
 
 export type SortId = (typeof SORTS)[number]["id"];
-export const DEFAULT_SORT: SortId = "name";
+export const DEFAULT_SORT: SortId = "aspect-type";
 
 type Compare = (a: Card, b: Card) => number;
 
