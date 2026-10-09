@@ -1,6 +1,7 @@
 import type { Card } from "../api/types";
 import { cardImageUrl } from "../api/marvelcdb";
 import { factionStyle } from "../lib/factions";
+import CardText from "./CardText";
 
 function Stat({ label, value }: { label: string; value: number | null | undefined }) {
   if (value === undefined || value === null) return null;
@@ -10,14 +11,6 @@ function Stat({ label, value }: { label: string; value: number | null | undefine
       <div className="font-display text-3xl leading-tight">{value}</div>
     </div>
   );
-}
-
-// MarvelCDB card text uses simple HTML (<b>, <i>) and [resource] tokens.
-// Strip tags and turn tokens into readable words rather than injecting HTML.
-function plainText(text: string): string {
-  return text
-    .replace(/<[^>]+>/g, "")
-    .replace(/\[(\w+)\]/g, (_, token: string) => `(${token})`);
 }
 
 /** Image + info for one card. Used by the card modal and the /card/:code page. */
@@ -71,11 +64,11 @@ export default function CardDetails({ card, titleId }: { card: Card; titleId?: s
         {card.traits && <p className="font-semibold italic">{card.traits}</p>}
 
         {card.text && (
-          <p className="panel whitespace-pre-line p-5 leading-relaxed">{plainText(card.text)}</p>
+          <CardText text={card.text} className="panel p-5 leading-relaxed" />
         )}
 
         {card.flavor && (
-          <p className="whitespace-pre-line text-sm italic text-muted">{plainText(card.flavor)}</p>
+          <CardText text={card.flavor} className="text-sm italic text-muted" />
         )}
 
         {card.illustrator && (
