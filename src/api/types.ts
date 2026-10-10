@@ -35,6 +35,8 @@ export interface Card {
   illustrator?: string;
   quantity?: number;
   deck_limit?: number;
+  /** MarvelCDB sends `is_unique`; `unique` kept as a fallback. */
+  is_unique?: boolean;
   unique?: boolean;
   permanent?: boolean;
   resource_energy?: number;
@@ -43,9 +45,18 @@ export interface Card {
   resource_wild?: number;
   // Hero / ally / minion stats
   attack?: number;
+  /** Consequential damage an ally takes when it attacks / thwarts. */
+  attack_cost?: number;
+  thwart_cost?: number;
   thwart?: number;
   defense?: number;
   health?: number;
+  /** Star icon printed next to a stat: the card text has a rule about it. */
+  cost_star?: boolean;
+  attack_star?: boolean;
+  thwart_star?: boolean;
+  defense_star?: boolean;
+  health_star?: boolean;
   hand_size?: number;
   // Images are served by marvelcdb.com; `imagesrc` is a site-relative path.
   imagesrc?: string;
