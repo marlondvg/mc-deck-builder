@@ -78,6 +78,10 @@ vercel.json    rewrite SPA → /index.html
 - Límite de copias por título (nombre), no por código.
 - Curva de coste y, si el usuario marcó packs, "Tienes N" en cada carta y un aviso cuando el mazo usa más copias de las que tiene (no invalida el mazo).
 
+**Constructor de mazos, fase 3 (`components/DeckActions.tsx`, `lib/deckExport.ts`)**
+- Exportar el mazo como texto (agrupado por tipo, con el pack de cada carta), con Copiar y Descargar .txt.
+- Duplicar ("<nombre> (copia)") y Borrar con confirmación, en Mis mazos y en el editor.
+
 ## Forma de trabajo acordada con Marlon
 
 - Commits a nombre de **Marlon Vera <marlondvg@gmail.com>**.
@@ -93,5 +97,4 @@ vercel.json    rewrite SPA → /index.html
 
 ## Próximos pasos
 
-1. **Constructor de mazos, fase 3:** Mis mazos con duplicar y borrar, y exportar el mazo como texto.
-2. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección y los mazos (`lib/userStore.ts`) al backend.
+1. **Backend y login real:** Spring Boot es el stack principal de Marlon. Se descartó usar la API OAuth2 de MarvelCDB (requiere pedir credenciales por correo, no tiene CORS y no expone la colección). Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección y los mazos (`lib/userStore.ts`) al backend.

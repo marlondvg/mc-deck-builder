@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { cardImageUrl } from "../api/marvelcdb";
 import { useCards, usePacks } from "../api/hooks";
 import type { Card } from "../api/types";
@@ -25,6 +25,8 @@ import {
   titleKey,
 } from "../lib/deckRules";
 import CostCurve from "../components/CostCurve";
+import DeckActions from "../components/DeckActions";
+import { deckAsText } from "../lib/deckExport";
 import { useDecks } from "../lib/decks";
 import { factionStyle } from "../lib/factions";
 import { printingKey } from "../lib/reprints";
@@ -160,7 +162,8 @@ export default function DeckEditorPage() {
   const { data: cards, isLoading } = useCards();
   const { data: packs } = usePacks();
   const { owned } = useCollection();
-  const { decks, updateDeck } = useDecks();
+  const { decks, updateDeck, deleteDeck, duplicateDeck } = useDecks();
+  const navigate = useNavigate();
   const deck = decks.find((d) => d.id === id);
 
   const [q, setQ] = useState("");
@@ -279,6 +282,18 @@ export default function DeckEditorPage() {
           </span>
           <span className="text-subtle">{issues.length ? "Mazo inválido" : "Mazo válido"} · se guarda solo</span>
         </div>
+        <DeckActions
+          name={deck.name}
+          exportText={() => deckAsText(deck, byCode, packs)}
+          onDuplicate={() => {
+            const copy = duplicateDeck(deck.id);
+            if (copy) navigate(`/decks/${copy}`);
+          }}
+          onDelete={() => {
+            navigate("/decks");
+            deleteDeck(deck.id);
+          }}
+        />
       </div>
 
       {/* On small screens the two columns become tabs. */}
