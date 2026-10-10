@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-[10px] px-4 py-2.5 text-[15px] font-bold transition ${
+  `whitespace-nowrap rounded-[10px] px-4 py-2.5 text-[15px] font-bold transition ${
     isActive ? "bg-red text-white" : "text-ink hover:text-red"
   }`;
 
@@ -32,14 +32,19 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="flex flex-1 flex-wrap gap-1.5">
+        <nav className="order-last flex w-full gap-1.5 overflow-x-auto sm:order-none sm:w-auto sm:flex-1">
           <NavLink to="/" end className={navClass}>
             Cartas
           </NavLink>
-          {/* "Mis mazos" / "Crear mazo" links arrive with the deck builder */}
+          <NavLink to="/decks" end className={navClass}>
+            Mis mazos
+          </NavLink>
+          <NavLink to="/decks/new" className={navClass}>
+            Crear mazo
+          </NavLink>
         </nav>
 
-        <div ref={menuRef}>
+        <div ref={menuRef} className="ml-auto">
           {username ? (
             <div className="relative border-l-2 border-ink/15 pl-5">
               <button

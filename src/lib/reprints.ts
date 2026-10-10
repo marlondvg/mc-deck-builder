@@ -1,7 +1,7 @@
 import type { Card, Pack } from "../api/types";
 
 // The same card is often reprinted in later packs with new art. MarvelCDB
-// doesn't always link those reprints with `duplicate_of`, so we group cards
+// doesn't always link those reprints with `duplicate_of_code`, so we group cards
 // that share name, subname, type, aspect and rules text.
 
 const norm = (s: string | undefined) =>

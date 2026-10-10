@@ -35,6 +35,11 @@ export interface Card {
   illustrator?: string;
   quantity?: number;
   deck_limit?: number;
+  /** Hero or special set the card belongs to (e.g. "spider_man"); null for aspect cards. */
+  card_set_code?: string | null;
+  card_set_name?: string | null;
+  /** Back face of a double-sided card; not picked on its own. */
+  hidden?: boolean;
   /** MarvelCDB sends `is_unique`; `unique` kept as a fallback. */
   is_unique?: boolean;
   unique?: boolean;
@@ -61,7 +66,8 @@ export interface Card {
   // Images are served by marvelcdb.com; `imagesrc` is a site-relative path.
   imagesrc?: string;
   url?: string;
-  duplicate_of?: string;
+  /** Set on exact reprints: the code of the original printing. */
+  duplicate_of_code?: string;
 }
 
 export interface Pack {
