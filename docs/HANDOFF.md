@@ -66,6 +66,13 @@ vercel.json    rewrite SPA → /index.html
 - Se guarda en `localStorage` por usuario (`mcdb:collection:<usuario>`) con el hook `useCollection()`, y se sincroniza entre pestañas.
 - Opción "Solo cartas de mi colección" en el menú Opciones de la lista (`mine=1`), visible solo con sesión iniciada. Una reimpresión en un pack propio cuenta como tener la carta.
 
+**Constructor de mazos, fase 1 (`NewDeckPage`, `DeckEditorPage`, `DecksPage`, `lib/deckRules.ts`, `lib/decks.ts`)**
+- Crear mazo (`/decks/new`): elegir héroe (por defecto solo los de la colección, con casilla para ver todos) y aspecto. Pool lo puede elegir cualquier héroe.
+- Editor (`/decks/:id`): buscador con solo las cartas legales para el mazo (aspecto + Basic), por defecto solo las de la colección con casilla "Mostrar todas las cartas"; +/− por carta con su límite (`deck_limit`); cartas del héroe fijas; contador 40–50; avisos de reglas. Se guarda solo. En móvil, pestañas Cartas / Mazo.
+- Mis mazos (`/decks`): lista con héroe, aspecto, cartas y marca "Inválido". Los mazos inválidos se pueden guardar.
+- Se guarda en `localStorage` por usuario (`mcdb:decks:<usuario>`) con el formato de MarvelCDB (`heroCode`, `slots`). Hace falta iniciar sesión.
+- El campo de reimpresiones de la API es `duplicate_of_code` (no `duplicate_of`).
+
 ## Forma de trabajo acordada con Marlon
 
 - Commits a nombre de **Marlon Vera <marlondvg@gmail.com>**.
@@ -81,9 +88,7 @@ vercel.json    rewrite SPA → /index.html
 
 ## Próximos pasos
 
-1. **Constructor de mazos:**
-   - Elegir héroe y aspecto, y agregar o quitar cartas.
-   - Validar las reglas del mazo: 40–50 cartas, límites por carta y cartas del héroe obligatorias.
-   - Mostrar contadores por tipo y coste, y guardar el mazo.
-2. **Mis mazos:** lista de los mazos guardados.
-3. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección de `lib/collection.ts` al backend.
+1. **Constructor de mazos**, fases 2 y 3 (la fase 1 ya está hecha):
+   - Fase 2: héroes con reglas especiales (`deck_requirements`: Spider-Woman 2 aspectos, Adam Warlock 4 aspectos con 1 copia; `deck_options`: cartas extra permitidas), desglose por tipo, curva de coste y aviso cuando el mazo pide más copias de las que dan los packs de la colección. Límite de copias por título y no solo por código.
+   - Fase 3: Mis mazos con duplicar y borrar, y exportar el mazo como texto.
+2. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección y los mazos (`lib/userStore.ts`) al backend.

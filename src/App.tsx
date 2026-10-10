@@ -4,7 +4,10 @@ import Header from "./components/Header";
 import CardsPage from "./pages/CardsPage";
 import CardDetailPage from "./pages/CardDetailPage";
 import CollectionPage from "./pages/CollectionPage";
+import DeckEditorPage from "./pages/DeckEditorPage";
+import DecksPage from "./pages/DecksPage";
 import LoginPage from "./pages/LoginPage";
+import NewDeckPage from "./pages/NewDeckPage";
 
 export default function App() {
   return (
@@ -15,6 +18,9 @@ export default function App() {
           <Route path="/" element={<CardsPage />} />
           <Route path="/card/:code" element={<CardDetailPage />} />
           <Route path="/collection" element={<CollectionPage />} />
+          <Route path="/decks" element={<DecksPage />} />
+          <Route path="/decks/new" element={<NewDeckPage />} />
+          <Route path="/decks/:id" element={<DeckEditorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="*"
