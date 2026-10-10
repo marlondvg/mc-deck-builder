@@ -84,5 +84,3 @@ vercel.json    rewrite SPA → /index.html
    - Mostrar contadores por tipo y coste, y guardar el mazo.
 4. **Mis mazos:** lista de los mazos guardados.
 5. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx`.
-6. Pendientes menores:
-   - Aviso de "sitio fan no oficial, no afiliado a FFG" en el pie de página.

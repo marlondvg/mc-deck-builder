@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CardsPage from "./pages/CardsPage";
 import CardDetailPage from "./pages/CardDetailPage";
@@ -7,9 +8,9 @@ import LoginPage from "./pages/LoginPage";
 
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
         <Routes>
           <Route path="/" element={<CardsPage />} />
           <Route path="/card/:code" element={<CardDetailPage />} />
@@ -21,6 +22,7 @@ export default function App() {
           />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }
