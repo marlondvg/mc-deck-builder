@@ -17,18 +17,19 @@ Sitio fan para armar mazos de **Marvel Champions LCG**, inspirado en MarvelCDB, 
 ```
 src/
   api/         marvelcdb.ts (fetch), hooks.ts (TanStack Query, caché 1 día), types.ts (Card, Pack)
-  components/  Header (menú de cuenta: "Mi colección" / "Salir"), CardTile, CardModal,
+  components/  Header (Mazos, Crear mazo, Cartas, Colección; menú de cuenta con "Salir"), CardTile, CardModal,
                CardDetails, CardText, Dropdown (+ CheckRow), MultiSelect
   lib/         auth.tsx (login simulado en localStorage), factions.ts (colores y orden de aspectos),
                reprints.ts (agrupar reimpresiones), sorting.ts (opciones de orden)
-  pages/       CardsPage (lista principal), CardDetailPage (/card/:code), CollectionPage (placeholder),
+  pages/       DecksPage (página principal, /), CardsPage (/cards), CardDetailPage (/card/:code),
+               CollectionPage (/collection), NewDeckPage (/decks/new), DeckEditorPage (/decks/:id),
                LoginPage (simulado)
 vercel.json    rewrite SPA → /index.html
 ```
 
 ## Lo que ya está hecho (en `main`)
 
-**Lista de cartas (`CardsPage`)**
+**Lista de cartas (`CardsPage`, en `/cards`; la página principal `/` es Mazos)**
 - Grid con la imagen completa de cada carta, sin recorte ni márgenes.
 - Al hacer clic se abre una **ventana emergente** con el detalle (`?card=CODE` en la URL) y se mantienen los filtros. Se cierra con Esc, con clic fuera o con Atrás, y las flechas pasan a la carta anterior o siguiente.
 - Búsqueda por nombre, rasgos o texto.

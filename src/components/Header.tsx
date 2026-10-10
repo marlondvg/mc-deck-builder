@@ -33,13 +33,13 @@ export default function Header() {
         </Link>
 
         <nav className="order-last flex w-full gap-1.5 overflow-x-auto sm:order-none sm:w-auto sm:flex-1">
-          <NavLink to="/decks" end className={navClass}>
+          <NavLink to="/" end className={navClass}>
             Mazos
           </NavLink>
           <NavLink to="/decks/new" className={navClass}>
             Crear mazo
           </NavLink>
-          <NavLink to="/" end className={navClass}>
+          <NavLink to="/cards" className={navClass}>
             Cartas
           </NavLink>
           <NavLink to="/collection" className={navClass}>

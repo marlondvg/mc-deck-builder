@@ -215,7 +215,7 @@ export default function DeckEditorPage() {
     return (
       <p className="py-16 text-center text-muted">
         No se encontró ese mazo.{" "}
-        <Link to="/decks" className="font-bold text-petrol hover:underline">
+        <Link to="/" className="font-bold text-petrol hover:underline">
           Ver mis mazos
         </Link>
       </p>
@@ -258,7 +258,7 @@ export default function DeckEditorPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-1.5">
-        <Link to="/decks" className="text-sm font-bold text-petrol hover:underline">
+        <Link to="/" className="text-sm font-bold text-petrol hover:underline">
           ← Mis mazos
         </Link>
         <input
@@ -290,7 +290,7 @@ export default function DeckEditorPage() {
             if (copy) navigate(`/decks/${copy}`);
           }}
           onDelete={() => {
-            navigate("/decks");
+            navigate("/");
             deleteDeck(deck.id);
           }}
         />

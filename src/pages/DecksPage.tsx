@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { cardImageUrl } from "../api/marvelcdb";
 import { useCards, usePacks } from "../api/hooks";
 import DeckActions from "../components/DeckActions";
@@ -15,8 +15,29 @@ export default function DecksPage() {
   const { data: packs } = usePacks();
   const { decks, deleteDeck, duplicateDeck } = useDecks();
   const byCode = useMemo(() => new Map((cards ?? []).map((c) => [c.code, c])), [cards]);
+  const { search } = useLocation();
 
-  if (!username) return <Navigate to="/login" replace />;
+  // The card list used to live at "/": send old links with filters there.
+  if (search) return <Navigate to={{ pathname: "/cards", search }} replace />;
+
+  if (!username) {
+    return (
+      <div className="panel mx-auto mt-10 flex max-w-xl flex-col items-center gap-4 p-8 text-center">
+        <h1 className="font-display text-5xl uppercase leading-none tracking-wide">Mazos</h1>
+        <p className="text-muted">
+          Inicia sesión para crear y guardar tus mazos, o mira primero todas las cartas.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link to="/login" className="btn-primary bg-red text-white">
+            Iniciar sesión
+          </Link>
+          <Link to="/cards" className="btn-secondary">
+            Ver cartas
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

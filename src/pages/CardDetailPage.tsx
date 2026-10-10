@@ -13,7 +13,7 @@ export default function CardDetailPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-muted">No se encontró esa carta.</p>
-        <Link to="/" className="mt-3 inline-block font-bold text-petrol hover:underline">
+        <Link to="/cards" className="mt-3 inline-block font-bold text-petrol hover:underline">
           ← Volver a las cartas
         </Link>
       </div>
@@ -22,7 +22,7 @@ export default function CardDetailPage() {
 
   return (
     <div className="space-y-4">
-      <Link to="/" className="text-sm font-bold text-petrol hover:underline">
+      <Link to="/cards" className="text-sm font-bold text-petrol hover:underline">
         ← Volver a las cartas
       </Link>
       <CardDetails card={card} />
