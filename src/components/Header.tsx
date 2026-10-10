@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-[10px] px-4 py-2.5 text-[15px] font-bold transition ${
+  `whitespace-nowrap rounded-[10px] px-2.5 py-2.5 text-[14px] font-bold transition sm:px-4 sm:text-[15px] ${
     isActive ? "bg-red text-white" : "text-ink hover:text-red"
   }`;
 
@@ -34,13 +34,16 @@ export default function Header() {
 
         <nav className="order-last flex w-full gap-1.5 overflow-x-auto sm:order-none sm:w-auto sm:flex-1">
           <NavLink to="/" end className={navClass}>
-            Cartas
-          </NavLink>
-          <NavLink to="/decks" end className={navClass}>
-            Mis mazos
+            Mazos
           </NavLink>
           <NavLink to="/decks/new" className={navClass}>
             Crear mazo
+          </NavLink>
+          <NavLink to="/cards" className={navClass}>
+            Cartas
+          </NavLink>
+          <NavLink to="/collection" className={navClass}>
+            Colección
           </NavLink>
         </nav>
 
@@ -73,14 +76,6 @@ export default function Header() {
                   role="menu"
                   className="panel absolute right-0 top-[calc(100%+8px)] z-30 flex min-w-[220px] flex-col gap-1 rounded-[14px] p-2"
                 >
-                  <Link
-                    role="menuitem"
-                    to="/collection"
-                    onClick={() => setOpen(false)}
-                    className="flex min-h-11 items-center rounded-[10px] px-3.5 text-[15px] font-bold text-ink hover:bg-amber-soft"
-                  >
-                    Mi colección
-                  </Link>
                   <button
                     role="menuitem"
                     onClick={() => {

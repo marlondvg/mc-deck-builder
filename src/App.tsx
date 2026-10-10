@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CardsPage from "./pages/CardsPage";
@@ -15,10 +15,11 @@ export default function App() {
       <Header />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
         <Routes>
-          <Route path="/" element={<CardsPage />} />
+          <Route path="/" element={<DecksPage />} />
+          <Route path="/cards" element={<CardsPage />} />
           <Route path="/card/:code" element={<CardDetailPage />} />
           <Route path="/collection" element={<CollectionPage />} />
-          <Route path="/decks" element={<DecksPage />} />
+          <Route path="/decks" element={<Navigate to="/" replace />} />
           <Route path="/decks/new" element={<NewDeckPage />} />
           <Route path="/decks/:id" element={<DeckEditorPage />} />
           <Route path="/login" element={<LoginPage />} />

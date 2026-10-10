@@ -49,6 +49,26 @@ export function useDecks() {
     [update],
   );
 
+  const deleteDeck = useCallback(
+    (id: string) => update((current) => current.filter((d) => d.id !== id)),
+    [update],
+  );
+
+  /** Saves a copy named "<name> (copia)" and returns its id. */
+  const duplicateDeck = useCallback(
+    (id: string) => {
+      const source = decks.find((d) => d.id === id);
+      if (!source) return null;
+      return createDeck({
+        name: `${source.name} (copia)`,
+        heroCode: source.heroCode,
+        aspects: [...source.aspects],
+        slots: { ...source.slots },
+      });
+    },
+    [decks, createDeck],
+  );
+
   const sorted = [...decks].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  return { decks: sorted, createDeck, updateDeck };
+  return { decks: sorted, createDeck, updateDeck, deleteDeck, duplicateDeck };
 }

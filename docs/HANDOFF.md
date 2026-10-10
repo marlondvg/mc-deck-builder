@@ -17,18 +17,19 @@ Sitio fan para armar mazos de **Marvel Champions LCG**, inspirado en MarvelCDB, 
 ```
 src/
   api/         marvelcdb.ts (fetch), hooks.ts (TanStack Query, caché 1 día), types.ts (Card, Pack)
-  components/  Header (menú de cuenta: "Mi colección" / "Salir"), CardTile, CardModal,
+  components/  Header (Mazos, Crear mazo, Cartas, Colección; menú de cuenta con "Salir"), CardTile, CardModal,
                CardDetails, CardText, Dropdown (+ CheckRow), MultiSelect
   lib/         auth.tsx (login simulado en localStorage), factions.ts (colores y orden de aspectos),
                reprints.ts (agrupar reimpresiones), sorting.ts (opciones de orden)
-  pages/       CardsPage (lista principal), CardDetailPage (/card/:code), CollectionPage (placeholder),
+  pages/       DecksPage (página principal, /), CardsPage (/cards), CardDetailPage (/card/:code),
+               CollectionPage (/collection), NewDeckPage (/decks/new), DeckEditorPage (/decks/:id),
                LoginPage (simulado)
 vercel.json    rewrite SPA → /index.html
 ```
 
 ## Lo que ya está hecho (en `main`)
 
-**Lista de cartas (`CardsPage`)**
+**Lista de cartas (`CardsPage`, en `/cards`; la página principal `/` es Mazos)**
 - Grid con la imagen completa de cada carta, sin recorte ni márgenes.
 - Al hacer clic se abre una **ventana emergente** con el detalle (`?card=CODE` en la URL) y se mantienen los filtros. Se cierra con Esc, con clic fuera o con Atrás, y las flechas pasan a la carta anterior o siguiente.
 - Búsqueda por nombre, rasgos o texto.
@@ -78,6 +79,10 @@ vercel.json    rewrite SPA → /index.html
 - Límite de copias por título (nombre), no por código.
 - Curva de coste y, si el usuario marcó packs, "Tienes N" en cada carta y un aviso cuando el mazo usa más copias de las que tiene (no invalida el mazo).
 
+**Constructor de mazos, fase 3 (`components/DeckActions.tsx`, `lib/deckExport.ts`)**
+- Exportar el mazo como texto (agrupado por tipo, con el pack de cada carta), con Copiar y Descargar .txt.
+- Duplicar ("<nombre> (copia)") y Borrar con confirmación, en Mis mazos y en el editor.
+
 ## Forma de trabajo acordada con Marlon
 
 - Commits a nombre de **Marlon Vera <marlondvg@gmail.com>**.
@@ -93,5 +98,4 @@ vercel.json    rewrite SPA → /index.html
 
 ## Próximos pasos
 
-1. **Constructor de mazos, fase 3:** Mis mazos con duplicar y borrar, y exportar el mazo como texto.
-2. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección y los mazos (`lib/userStore.ts`) al backend.
+1. **Backend y login real:** Spring Boot es el stack principal de Marlon. Se descartó usar la API OAuth2 de MarvelCDB (requiere pedir credenciales por correo, no tiene CORS y no expone la colección). Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección y los mazos (`lib/userStore.ts`) al backend.
