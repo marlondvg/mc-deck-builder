@@ -5,6 +5,19 @@
   --font-display: "Anton", Impact, sans-serif;
   --font-sans: "Space Grotesk", system-ui, sans-serif;
 
+  /* Card fonts. The printed cards use commercial fonts (Avenir Next LT Pro,
+     Komika Title, Komika Text Tight). We use them when installed on the
+     viewer's device (macOS ships Avenir Next) and fall back to close free
+     Google Fonts otherwise. */
+  --font-card: "Avenir Next LT Pro", "Avenir Next", "Nunito Sans", system-ui, sans-serif;
+  --font-trait: "Komika Title", "Bangers", Impact, sans-serif;
+  --font-flavor: "Komika Text Tight", "Komika Text", "Comic Neue", system-ui, sans-serif;
+  /* Card title: Exo 2 (free, same as the card). Stat numbers: Elektra Medium
+     Pro Bold Italic, else Exo 2. Stat labels: Futura (macOS), else Jost. */
+  --font-card-title: "Exo 2", "Avenir Next", sans-serif;
+  --font-stat: "Elektra Medium Pro", "Exo 2", Impact, sans-serif;
+  --font-stat-label: "Futura LT BT", "Futura", "Jost", sans-serif;
+
   --color-ink: #141414;
   --color-muted: #444444;
   --color-subtle: #555555;
@@ -27,6 +40,12 @@
   --color-pool: #ff3d7f;
   --color-hero: #ff8a00;
   --color-campaign: #7b3fe4;
+
+  /* Stat starbursts, as printed on the cards */
+  --color-stat-thw: #1f6fd1;
+  --color-stat-atk: #d6262b;
+  --color-stat-hp: #f08a1c;
+  --color-stat-def: #3fa535;
 
   --shadow-comic-sm: 3px 3px 0 #141414;
   --shadow-comic: 4px 4px 0 #141414;
@@ -124,5 +143,21 @@ select:focus-visible {
       linear-gradient(160deg, #ffffff59 0%, #ffffff00 40%, #00000047 100%);
     background-size: 10px 10px, 10px 10px, auto;
     background-position: 0 0, 5px 5px, 0 0;
+  }
+
+  /* Stat label box from the printed card: black, its right side slanted so the
+     bottom edge is longer than the top, with a white edge along the bottom and
+     the slanted side. The outer box is the white edge; the inner one is black. */
+  .stat-label-box {
+    --slant: 8px;
+    clip-path: polygon(0 0, calc(100% - var(--slant)) 0, 100% 100%, 0 100%);
+    background: #ffffff;
+    padding: 0 2px 2px 0;
+  }
+
+  .stat-label-box > * {
+    clip-path: polygon(0 0, calc(100% - var(--slant)) 0, 100% 100%, 0 100%);
+    background: var(--color-ink);
+    padding: 0 calc(var(--slant) + 4px) 0 8px;
   }
 }

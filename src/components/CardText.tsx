@@ -10,13 +10,14 @@ import type { ReactNode } from "react";
 const TOKEN_RE =
   /(<\/?\s*(?:b|strong|i|em|u)\s*>|<\s*br\s*\/?\s*>|\[\[[^\]]+\]\]|\[[a-z_]+\]|\n|<[^>]+>)/gi;
 
-// Resource and game icons. `cls` is the pill color; text stays readable without the color.
-const ICONS: Record<string, { label: string; cls: string; title?: string }> = {
+// Game icons as colored labels. Resources use their resource color.
+// `plain` icons are drawn as a bare glyph in the text, like on the card.
+const ICONS: Record<string, { label: string; cls: string; title?: string; plain?: boolean }> = {
   energy: { label: "Energy", cls: "bg-justice text-ink" },
   mental: { label: "Mental", cls: "bg-leadership text-ink" },
   physical: { label: "Physical", cls: "bg-aggression text-white" },
   wild: { label: "Wild", cls: "bg-protection text-ink" },
-  star: { label: "★", cls: "bg-white text-ink", title: "Star" },
+  star: { label: "★", cls: "text-ink", title: "Star", plain: true },
   per_hero: { label: "per player", cls: "bg-white text-ink", title: "Per player" },
   per_player: { label: "per player", cls: "bg-white text-ink", title: "Per player" },
   boost: { label: "Boost", cls: "bg-white text-ink" },
@@ -28,11 +29,19 @@ const ICONS: Record<string, { label: string; cls: string; title?: string }> = {
   cost: { label: "Cost", cls: "bg-white text-ink" },
 };
 
-function Icon({ name }: { name: string }) {
+/** Colored label for a game icon token (also used for the card's resources). */
+export function IconLabel({ name }: { name: string }) {
   const icon = ICONS[name] ?? {
     label: name.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()),
     cls: "bg-white text-ink",
   };
+  if (icon.plain) {
+    return (
+      <span title={icon.title ?? icon.label} className={`not-italic ${icon.cls}`}>
+        {icon.label}
+      </span>
+    );
+  }
   return (
     <span
       title={icon.title ?? icon.label}
@@ -55,7 +64,7 @@ export default function CardText({ text, className }: { text: string; className?
     let node: ReactNode = value;
     if (underline) node = <u key={key++}>{node}</u>;
     if (italic) node = <em key={key++}>{node}</em>;
-    if (bold) node = <strong key={key++}>{node}</strong>;
+    if (bold) node = <strong key={key++} className="font-semibold">{node}</strong>;
     nodes.push(typeof node === "string" ? <span key={key++}>{node}</span> : node);
   };
 
@@ -76,12 +85,12 @@ export default function CardText({ text, className }: { text: string; className?
       nodes.push(<br key={key++} />);
     } else if (part.startsWith("[[") && part.endsWith("]]")) {
       nodes.push(
-        <strong key={key++} className="italic">
+        <strong key={key++} className="font-trait font-normal tracking-wide">
           {part.slice(2, -2)}
         </strong>,
       );
     } else if (/^\[[a-z_]+\]$/i.test(part)) {
-      nodes.push(<Icon key={key++} name={part.slice(1, -1).toLowerCase()} />);
+      nodes.push(<IconLabel key={key++} name={part.slice(1, -1).toLowerCase()} />);
     } else {
       pushText(part);
     }
