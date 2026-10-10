@@ -70,7 +70,6 @@ export default function CardsPage() {
     () =>
       (cards ?? []).filter(
         (c) =>
-          !c.duplicate_of &&
           (encounter || c.faction_code !== "encounter") &&
           (showNoImage || !!c.imagesrc),
       ),
@@ -92,16 +91,6 @@ export default function CardsPage() {
   const typeKey = typeSel.join(",");
   const packKey = packSel.join(",");
 
-  // Codes of the cards the user owns. A reprint linked with `duplicate_of`
-  // counts as owning the original, since only originals are listed.
-  const ownedCodes = useMemo(() => {
-    if (!onlyMine) return null;
-    const codes = new Set<string>();
-    for (const c of cards ?? []) {
-      if (owned.has(c.pack_code)) codes.add(c.duplicate_of ?? c.code);
-    }
-    return codes;
-  }, [cards, owned, onlyMine]);
 
   const filtered = useMemo(() => {
     const fs = new Set(factionKey.split(",").filter(Boolean));
@@ -113,7 +102,7 @@ export default function CardsPage() {
       if (fs.size && !fs.has(c.faction_code)) return false;
       if (ts.size && !ts.has(c.type_code)) return false;
       if (ps.size && !ps.has(c.pack_code)) return false;
-      if (ownedCodes && !ownedCodes.has(c.code)) return false;
+      if (onlyMine && !owned.has(c.pack_code)) return false;
       if (!needle) return true;
       return [c.name, c.subname, c.traits, c.text]
         .filter(Boolean)
@@ -124,7 +113,7 @@ export default function CardsPage() {
     // owning only a newer printing) still shows that pack's printing.
     const result = showReprints ? matches : firstPrintings(matches, packList);
     return result.sort(makeComparator(sort, packList));
-  }, [base, q, factionKey, typeKey, packKey, ownedCodes, showReprints, packList, sort]);
+  }, [base, q, factionKey, typeKey, packKey, onlyMine, owned, showReprints, packList, sort]);
 
   // Go back to the first page whenever the filters change.
   useEffect(
