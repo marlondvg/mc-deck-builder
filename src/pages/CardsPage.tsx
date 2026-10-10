@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useCards, usePacks } from "../api/hooks";
 import type { Card } from "../api/types";
 import CardTile from "../components/CardTile";
 import CardModal from "../components/CardModal";
 import Dropdown, { CheckRow } from "../components/Dropdown";
 import MultiSelect from "../components/MultiSelect";
+import { useAuth } from "../lib/auth";
+import { useCollection } from "../lib/collection";
 import { factionRank, factionStyle } from "../lib/factions";
 import { firstPrintings } from "../lib/reprints";
 import { DEFAULT_SORT, SORTS, makeComparator, type SortId } from "../lib/sorting";
@@ -30,6 +32,7 @@ const OPTIONS = [
   { key: "encounter", label: "Incluir cartas de encuentro" },
   { key: "noimg", label: "Mostrar cartas sin imagen" },
   { key: "reprints", label: "Mostrar reimpresiones (arte nuevo)" },
+  { key: "mine", label: "Solo cartas de mi colección" },
 ] as const;
 
 export default function CardsPage() {
@@ -45,6 +48,11 @@ export default function CardsPage() {
   const encounter = params.get("encounter") === "1";
   const showNoImage = params.get("noimg") === "1";
   const showReprints = params.get("reprints") === "1";
+  const { username } = useAuth();
+  const { owned } = useCollection();
+  // "Only my collection" needs a signed-in user; ignore the param otherwise.
+  const onlyMine = !!username && params.get("mine") === "1";
+  const options = OPTIONS.filter((o) => o.key !== "mine" || username);
   const sortParam = params.get("sort");
   const sort: SortId = SORTS.some((s) => s.id === sortParam) ? (sortParam as SortId) : DEFAULT_SORT;
 
@@ -84,6 +92,17 @@ export default function CardsPage() {
   const typeKey = typeSel.join(",");
   const packKey = packSel.join(",");
 
+  // Codes of the cards the user owns. A reprint linked with `duplicate_of`
+  // counts as owning the original, since only originals are listed.
+  const ownedCodes = useMemo(() => {
+    if (!onlyMine) return null;
+    const codes = new Set<string>();
+    for (const c of cards ?? []) {
+      if (owned.has(c.pack_code)) codes.add(c.duplicate_of ?? c.code);
+    }
+    return codes;
+  }, [cards, owned, onlyMine]);
+
   const filtered = useMemo(() => {
     const fs = new Set(factionKey.split(",").filter(Boolean));
     const ts = new Set(typeKey.split(",").filter(Boolean));
@@ -94,26 +113,27 @@ export default function CardsPage() {
       if (fs.size && !fs.has(c.faction_code)) return false;
       if (ts.size && !ts.has(c.type_code)) return false;
       if (ps.size && !ps.has(c.pack_code)) return false;
+      if (ownedCodes && !ownedCodes.has(c.code)) return false;
       if (!needle) return true;
       return [c.name, c.subname, c.traits, c.text]
         .filter(Boolean)
         .some((f) => f!.toLowerCase().includes(needle));
     });
 
-    // Reprints are collapsed after filtering, so picking a newer pack still
-    // shows that pack's printing.
+    // Reprints are collapsed after filtering, so picking a newer pack (or
+    // owning only a newer printing) still shows that pack's printing.
     const result = showReprints ? matches : firstPrintings(matches, packList);
     return result.sort(makeComparator(sort, packList));
-  }, [base, q, factionKey, typeKey, packKey, showReprints, packList, sort]);
+  }, [base, q, factionKey, typeKey, packKey, ownedCodes, showReprints, packList, sort]);
 
   // Go back to the first page whenever the filters change.
   useEffect(
     () => setVisible(PAGE_SIZE),
-    [q, factionKey, typeKey, packKey, encounter, showNoImage, showReprints, sort],
+    [q, factionKey, typeKey, packKey, encounter, showNoImage, showReprints, onlyMine, sort],
   );
 
   const hasFilters = !!(q || factionKey || typeKey || packKey);
-  const optionsOn = OPTIONS.filter((o) => params.get(o.key) === "1").length;
+  const optionsOn = options.filter((o) => params.get(o.key) === "1").length;
 
   // ---- Card modal: the open card lives in ?card=CODE so filters stay put,
   // the browser Back button closes it, and the URL can be shared.
@@ -228,7 +248,7 @@ export default function CardsPage() {
           active={optionsOn > 0}
           align="right"
         >
-          {OPTIONS.map((o) => (
+          {options.map((o) => (
             <CheckRow
               key={o.key}
               checked={params.get(o.key) === "1"}
@@ -268,7 +288,14 @@ export default function CardsPage() {
 
       {cards && (
         <>
-          {filtered.length === 0 ? (
+          {onlyMine && owned.size === 0 ? (
+            <p className="py-16 text-center text-muted">
+              Todavía no marcaste packs en tu colección.{" "}
+              <Link to="/collection" className="font-bold text-petrol hover:underline">
+                Ir a Mi colección
+              </Link>
+            </p>
+          ) : filtered.length === 0 ? (
             <p className="py-16 text-center text-muted">Ninguna carta coincide con esos filtros.</p>
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-5">

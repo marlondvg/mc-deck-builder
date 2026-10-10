@@ -61,6 +61,11 @@ vercel.json    rewrite SPA → /index.html
 - **Estrella de estadística** (`cost_star`, `thwart_star`, `attack_star`, `defense_star`, `health_star`) junto al número, como el "3★" de Bombshell.
 - El texto de ambientación va dentro del mismo recuadro que el texto de reglas.
 
+**Mi colección (`CollectionPage`, `lib/collection.ts`)**
+- Página para marcar los packs que tiene el usuario, agrupados por año de publicación, con buscador y "Marcar/Desmarcar todos" (o solo los mostrados).
+- Se guarda en `localStorage` por usuario (`mcdb:collection:<usuario>`) con el hook `useCollection()`, y se sincroniza entre pestañas.
+- Opción "Solo cartas de mi colección" en el menú Opciones de la lista (`mine=1`), visible solo con sesión iniciada. Una reimpresión en un pack propio cuenta como tener la carta.
+
 ## Forma de trabajo acordada con Marlon
 
 - Commits a nombre de **Marlon Vera <marlondvg@gmail.com>**.
@@ -76,11 +81,9 @@ vercel.json    rewrite SPA → /index.html
 
 ## Próximos pasos
 
-1. **Mi colección:** página para marcar los packs que tiene el usuario, guardados primero en `localStorage` y luego en el backend.
-2. **Filtro "Solo mi colección"** en la lista de cartas, como una opción más en `OPTIONS`.
-3. **Constructor de mazos:**
+1. **Constructor de mazos:**
    - Elegir héroe y aspecto, y agregar o quitar cartas.
    - Validar las reglas del mazo: 40–50 cartas, límites por carta y cartas del héroe obligatorias.
    - Mostrar contadores por tipo y coste, y guardar el mazo.
-4. **Mis mazos:** lista de los mazos guardados.
-5. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx`.
+2. **Mis mazos:** lista de los mazos guardados.
+3. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección de `lib/collection.ts` al backend.
