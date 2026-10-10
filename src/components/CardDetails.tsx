@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Card } from "../api/types";
 import { cardImageUrl } from "../api/marvelcdb";
 import { factionStyle } from "../lib/factions";
@@ -212,21 +213,25 @@ export default function CardDetails({ card, titleId }: { card: Card; titleId?: s
           <Stat label="Mano" value={card.hand_size} />
         </div>
 
-        {card.traits && (
-          <p className="font-trait text-xl uppercase tracking-wide">{card.traits}</p>
-        )}
-
-        {(card.text || card.flavor) && (
-          <div className="panel space-y-3 p-5">
-            {card.text && (
-              <CardText text={card.text} className="font-card text-[17px] leading-relaxed" />
-            )}
-            {card.flavor && (
-              <CardText
-                text={card.flavor}
-                className="font-flavor text-base font-bold italic text-muted"
-              />
-            )}
+        {(card.traits || card.text || card.flavor) && (
+          <div
+            className="panel comic-fill card-text-frame"
+            style={{ "--aspect": `var(--color-${card.faction_code}, var(--color-basic))` } as CSSProperties}
+          >
+            <div className="card-text-rays space-y-3 p-5">
+              {card.traits && (
+                <p className="text-center font-trait text-xl uppercase tracking-wide">{card.traits}</p>
+              )}
+              {card.text && (
+                <CardText text={card.text} className="font-card text-[17px] leading-relaxed" />
+              )}
+              {card.flavor && (
+                <CardText
+                  text={card.flavor}
+                  className="font-flavor text-base font-bold italic text-muted"
+                />
+              )}
+            </div>
           </div>
         )}
 
