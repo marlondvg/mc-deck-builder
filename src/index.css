@@ -160,4 +160,24 @@ select:focus-visible {
     background: var(--color-ink);
     padding: 0 calc(var(--slant) + 4px) 0 8px;
   }
+
+  /* Rules text box from the printed card: a frame in the card's aspect color
+     (set --aspect) around a white panel with soft light rays. Use with
+     .panel and .comic-fill. */
+  .card-text-frame {
+    background-color: var(--aspect);
+    padding: 8px;
+  }
+
+  .card-text-rays {
+    border: 2px solid color-mix(in srgb, var(--aspect) 45%, #ffffff);
+    border-radius: 10px;
+    background:
+      radial-gradient(ellipse at 50% 40%, #ffffff 0%, #ffffffd9 40%, #ffffff00 85%),
+      repeating-conic-gradient(
+        from 0deg at 50% 40%,
+        color-mix(in srgb, var(--aspect) 16%, #ffffff) 0deg 2.5deg,
+        #ffffff 2.5deg 6deg
+      );
+  }
 }
