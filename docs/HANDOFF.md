@@ -73,6 +73,11 @@ vercel.json    rewrite SPA → /index.html
 - Se guarda en `localStorage` por usuario (`mcdb:decks:<usuario>`) con el formato de MarvelCDB (`heroCode`, `slots`). Hace falta iniciar sesión.
 - El campo de reimpresiones de la API es `duplicate_of_code` (no `duplicate_of`).
 
+**Constructor de mazos, fase 2 (`lib/deckRules.ts`, `components/CostCurve.tsx`)**
+- Héroes especiales, según `deck_requirements` y `deck_options` de la carta de héroe: Spider-Woman (2 aspectos con el mismo número de cartas), Adam Warlock (los 4 aspectos, mismo número de cartas, 1 copia de cada carta), Gamora (hasta 6 eventos Attack/Thwart de otros aspectos), Cyclops (aliados X-Men), Cable (planes secundarios de jugador), Maria Hill (3 apoyos S.H.I.E.L.D. distintos) y Wonder Man (eventos con recurso de energía). Las cartas permitidas por el héroe salen marcadas "Extra".
+- Límite de copias por título (nombre), no por código.
+- Curva de coste y, si el usuario marcó packs, "Tienes N" en cada carta y un aviso cuando el mazo usa más copias de las que tiene (no invalida el mazo).
+
 ## Forma de trabajo acordada con Marlon
 
 - Commits a nombre de **Marlon Vera <marlondvg@gmail.com>**.
@@ -88,7 +93,5 @@ vercel.json    rewrite SPA → /index.html
 
 ## Próximos pasos
 
-1. **Constructor de mazos**, fases 2 y 3 (la fase 1 ya está hecha):
-   - Fase 2: héroes con reglas especiales (`deck_requirements`: Spider-Woman 2 aspectos, Adam Warlock 4 aspectos con 1 copia; `deck_options`: cartas extra permitidas), desglose por tipo, curva de coste y aviso cuando el mazo pide más copias de las que dan los packs de la colección. Límite de copias por título y no solo por código.
-   - Fase 3: Mis mazos con duplicar y borrar, y exportar el mazo como texto.
+1. **Constructor de mazos, fase 3:** Mis mazos con duplicar y borrar, y exportar el mazo como texto.
 2. **Backend y login real:** Spring Boot es el stack principal de Marlon. Usuario y contraseña, colección y mazos por usuario. Reemplazar `lib/auth.tsx` y pasar la colección y los mazos (`lib/userStore.ts`) al backend.

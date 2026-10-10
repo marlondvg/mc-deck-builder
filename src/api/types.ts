@@ -40,6 +40,10 @@ export interface Card {
   card_set_name?: string | null;
   /** Back face of a double-sided card; not picked on its own. */
   hidden?: boolean;
+  /** Hero cards: extra cards the hero may include from other aspects. */
+  deck_options?: DeckOption[] | null;
+  /** Hero cards: special aspect rules (Spider-Woman, Adam Warlock). */
+  deck_requirements?: DeckRequirement[] | null;
   /** MarvelCDB sends `is_unique`; `unique` kept as a fallback. */
   is_unique?: boolean;
   unique?: boolean;
@@ -79,4 +83,25 @@ export interface Pack {
   total?: number;
   id?: number;
   cgdb_id?: number | null;
+}
+
+/** A rule on a hero card letting the deck include cards from other aspects. */
+export interface DeckOption {
+  type?: string[];
+  /** Card traits, lowercase or as printed (e.g. "attack", "S.H.I.E.L.D."). */
+  trait?: string[];
+  /** Printed resource icons, e.g. ["energy"]. */
+  resource?: string[];
+  /** Max copies in total of the cards this option allows. */
+  limit?: number;
+  /** Max different card titles this option allows. */
+  name_limit?: number;
+  use_deck_limit?: boolean;
+}
+
+export interface DeckRequirement {
+  /** Number of aspects the hero must choose. */
+  aspects?: number;
+  /** Max copies of each card that isn't the hero's own. */
+  limit?: number;
 }

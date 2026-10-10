@@ -10,7 +10,8 @@ import {
   ASPECTS,
   ASPECT_NAMES,
   heroChoices,
-  ownedPrintings,
+  heroRules,
+  ownedCopies,
   signatureCards,
   type Aspect,
 } from "../lib/deckRules";
@@ -49,27 +50,46 @@ export default function NewDeckPage() {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
   const [hero, setHero] = useState<Card | null>(null);
+  const [picked, setPicked] = useState<Aspect[]>([]);
 
   const heroes = useMemo(() => {
     const all = heroChoices(cards ?? []).sort((a, b) => a.name.localeCompare(b.name));
     if (showAll) return all;
-    const mine = ownedPrintings(cards ?? [], owned);
+    const mine = ownedCopies(cards ?? [], owned);
     return all.filter((h) => mine.has(printingKey(h)));
   }, [cards, owned, showAll]);
 
   if (!username) return <Navigate to="/login" replace />;
 
-  const create = (aspect: Aspect) => {
+  const rules = hero ? heroRules(hero) : null;
+
+  const create = (aspects: Aspect[]) => {
     if (!hero || !cards) return;
     const slots: Record<string, number> = {};
     for (const c of signatureCards(cards, hero)) slots[c.code] = c.quantity ?? 1;
     const id = createDeck({
-      name: `${hero.name} – ${ASPECT_NAMES[aspect]}`,
+      name: `${hero.name} – ${
+        aspects.length > 2 ? "4 aspectos" : aspects.map((a) => ASPECT_NAMES[a]).join(" / ")
+      }`,
       heroCode: hero.code,
-      aspects: [aspect],
+      aspects,
       slots,
     });
     navigate(`/decks/${id}`);
+  };
+
+  const pickHero = (h: Card | null) => {
+    setHero(h);
+    setPicked([]);
+  };
+
+  // One aspect: create on click. Several (Spider-Woman): pick them, then create.
+  const onAspect = (a: Aspect) => {
+    if (!rules) return;
+    if (rules.aspectCount === 1) return create([a]);
+    setPicked((p) =>
+      p.includes(a) ? p.filter((x) => x !== a) : p.length < rules.aspectCount ? [...p, a] : p,
+    );
   };
 
   return (
@@ -80,7 +100,13 @@ export default function NewDeckPage() {
           Crear mazo
         </h1>
         <p className="text-sm text-muted">
-          {hero ? "Elige el aspecto del mazo." : "Elige el héroe."}
+          {!rules
+            ? "Elige el héroe."
+            : rules.fixedAspects
+              ? `${hero!.name} usa los 4 aspectos, con el mismo número de cartas de cada uno y 1 copia de cada carta.`
+              : rules.aspectCount > 1
+                ? `${hero!.name} usa ${rules.aspectCount} aspectos, con el mismo número de cartas de cada uno. Elígelos.`
+                : "Elige el aspecto del mazo."}
         </p>
       </div>
 
@@ -89,19 +115,43 @@ export default function NewDeckPage() {
           <p className="text-lg">
             Héroe: <strong>{hero.name}</strong>
           </p>
-          <div className="flex flex-wrap gap-2">
-            {ASPECTS.map((a) => (
-              <button
-                key={a}
-                type="button"
-                onClick={() => create(a)}
-                className={`min-h-11 rounded-xl border-2 border-ink px-4 font-bold shadow-comic-sm hover:brightness-95 ${factionStyle(a).badge}`}
-              >
-                {ASPECT_NAMES[a]}
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={() => setHero(null)} className="btn-secondary ml-auto">
+          {rules?.fixedAspects ? (
+            <button
+              type="button"
+              onClick={() => create(rules.fixedAspects!)}
+              className="btn-primary bg-red text-white"
+            >
+              Crear mazo
+            </button>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {ASPECTS.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => onAspect(a)}
+                  aria-pressed={rules && rules.aspectCount > 1 ? picked.includes(a) : undefined}
+                  className={`min-h-11 rounded-xl border-2 border-ink px-4 font-bold shadow-comic-sm hover:brightness-95 ${factionStyle(a).badge} ${
+                    picked.includes(a) ? "outline-3 outline-offset-2 outline-ink" : ""
+                  }`}
+                >
+                  {picked.includes(a) && "✓ "}
+                  {ASPECT_NAMES[a]}
+                </button>
+              ))}
+              {rules && rules.aspectCount > 1 && (
+                <button
+                  type="button"
+                  disabled={picked.length !== rules.aspectCount}
+                  onClick={() => create(picked)}
+                  className="btn-primary bg-red text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Crear mazo ({picked.length}/{rules.aspectCount})
+                </button>
+              )}
+            </div>
+          )}
+          <button type="button" onClick={() => pickHero(null)} className="btn-secondary ml-auto">
             Cambiar héroe
           </button>
         </div>
@@ -140,7 +190,7 @@ export default function NewDeckPage() {
       {!hero && (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
           {heroes.map((h) => (
-            <HeroTile key={h.code} hero={h} onSelect={() => setHero(h)} />
+            <HeroTile key={h.code} hero={h} onSelect={() => pickHero(h)} />
           ))}
         </div>
       )}

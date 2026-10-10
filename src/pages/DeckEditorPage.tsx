@@ -8,15 +8,23 @@ import { CheckRow } from "../components/Dropdown";
 import { useAuth } from "../lib/auth";
 import { useCollection } from "../lib/collection";
 import {
+  ASPECT_NAMES,
   DECK_MAX,
   DECK_MIN,
+  aspectCounts,
+  cardLimit,
+  collectionWarnings,
   deckIssues,
-  deckLimit,
   deckPool,
   deckSize,
-  ownedPrintings,
+  heroRules,
+  isHeroExtra,
+  ownedCopies,
   signatureCards,
+  titleCounts,
+  titleKey,
 } from "../lib/deckRules";
+import CostCurve from "../components/CostCurve";
 import { useDecks } from "../lib/decks";
 import { factionStyle } from "../lib/factions";
 import { printingKey } from "../lib/reprints";
@@ -44,6 +52,12 @@ function PoolTile(props: {
   card: Card;
   count: number;
   limit: number;
+  /** False when the card's title is already at its limit (e.g. via another version). */
+  canAdd: boolean;
+  /** Copies in the user's collection, or null when not tracking it. */
+  owned: number | null;
+  /** In the pool only thanks to the hero's deck-building ability. */
+  extra: boolean;
   onOpen: () => void;
   onChange: (count: number) => void;
 }) {
@@ -76,10 +90,27 @@ function PoolTile(props: {
         <span className="text-sm font-bold tabular-nums">
           {count} / {limit}
         </span>
-        <CountButton label={`Agregar ${card.name}`} disabled={count >= limit} onClick={() => props.onChange(count + 1)}>
+        <CountButton label={`Agregar ${card.name}`} disabled={!props.canAdd} onClick={() => props.onChange(count + 1)}>
           +
         </CountButton>
       </div>
+      {(props.extra || props.owned !== null) && (
+        <div className="flex flex-wrap items-center justify-between gap-1 px-2 pb-2 text-xs">
+          {props.owned !== null && (
+            <span className={props.owned < count ? "font-bold text-danger" : "text-subtle"}>
+              Tienes {props.owned}
+            </span>
+          )}
+          {props.extra && (
+            <span
+              className={`rounded border-2 border-ink px-1 font-bold ${factionStyle(card.faction_code).badge}`}
+              title="Permitida por la habilidad del héroe"
+            >
+              Extra
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -88,12 +119,12 @@ function PoolTile(props: {
 function DeckRow(props: {
   card: Card;
   count: number;
-  limit: number;
+  canAdd: boolean;
   fixed: boolean;
   onOpen: () => void;
   onChange: (count: number) => void;
 }) {
-  const { card, count, limit } = props;
+  const { card, count } = props;
   return (
     <li className="flex min-h-9 items-center gap-2">
       <span className="w-6 shrink-0 text-right font-bold tabular-nums">{count}×</span>
@@ -114,7 +145,7 @@ function DeckRow(props: {
           <CountButton label={`Quitar ${card.name}`} onClick={() => props.onChange(count - 1)}>
             −
           </CountButton>
-          <CountButton label={`Agregar ${card.name}`} disabled={count >= limit} onClick={() => props.onChange(count + 1)}>
+          <CountButton label={`Agregar ${card.name}`} disabled={!props.canAdd} onClick={() => props.onChange(count + 1)}>
             +
           </CountButton>
         </span>
@@ -147,12 +178,16 @@ export default function DeckEditorPage() {
   );
   const signatureCodes = useMemo(() => new Set(signature.map((c) => c.code)), [signature]);
 
+  const rules = useMemo(() => (hero ? heroRules(hero) : null), [hero]);
   const aspectKey = deck?.aspects.join(",") ?? "";
   const pool = useMemo(
-    () => deckPool(cards ?? [], aspectKey.split(",").filter(Boolean), packs).sort(compare(packs)),
-    [cards, aspectKey, packs],
+    () =>
+      rules
+        ? deckPool(cards ?? [], aspectKey.split(",").filter(Boolean), rules, packs).sort(compare(packs))
+        : [],
+    [cards, aspectKey, rules, packs],
   );
-  const ownedKeys = useMemo(() => ownedPrintings(cards ?? [], owned), [cards, owned]);
+  const copies = useMemo(() => ownedCopies(cards ?? [], owned), [cards, owned]);
 
   const types = useMemo(() => {
     const map = new Map<string, string>();
@@ -164,16 +199,16 @@ export default function DeckEditorPage() {
     const needle = q.trim().toLowerCase();
     return pool.filter(
       (c) =>
-        (showAll || ownedKeys.has(printingKey(c)) || (deck?.slots[c.code] ?? 0) > 0) &&
+        (showAll || copies.has(printingKey(c)) || (deck?.slots[c.code] ?? 0) > 0) &&
         (!type || c.type_code === type) &&
         (!needle ||
           [c.name, c.traits, c.text].some((f) => f?.toLowerCase().includes(needle))),
     );
-  }, [pool, q, type, showAll, ownedKeys, deck]);
+  }, [pool, q, type, showAll, copies, deck]);
 
   if (!username) return <Navigate to="/login" replace />;
   if (isLoading || !cards) return <p className="py-16 text-center text-muted">Cargando cartas…</p>;
-  if (!deck || !hero) {
+  if (!deck || !hero || !rules) {
     return (
       <p className="py-16 text-center text-muted">
         No se encontró ese mazo.{" "}
@@ -195,6 +230,12 @@ export default function DeckEditorPage() {
   const size = deckSize(deck);
   const sizeOk = size >= DECK_MIN && size <= DECK_MAX;
   const issues = deckIssues(deck, byCode);
+  const titles = titleCounts(deck, byCode);
+  const canAdd = (c: Card) => (titles.get(titleKey(c)) ?? 0) < cardLimit(c, hero, rules);
+  // Collection checks only make sense once the user has marked some packs.
+  const tracking = owned.size > 0;
+  const warnings = tracking ? collectionWarnings(deck, byCode, copies) : [];
+  const perAspect = deck.aspects.length > 1 ? aspectCounts(deck, byCode, hero) : null;
 
   // Deck list: hero cards first, then the rest grouped by type.
   const deckCards = Object.keys(deck.slots)
@@ -227,7 +268,8 @@ export default function DeckEditorPage() {
           <span className="font-bold">{hero.name}</span>
           {deck.aspects.map((a) => (
             <span key={a} className={`rounded-lg border-2 border-ink px-2.5 py-0.5 font-bold ${factionStyle(a).badge}`}>
-              {a.charAt(0).toUpperCase() + a.slice(1)}
+              {ASPECT_NAMES[a] ?? a}
+              {perAspect && ` ${perAspect.get(a) ?? 0}`}
             </span>
           ))}
           <span
@@ -304,7 +346,10 @@ export default function DeckEditorPage() {
                   key={c.code}
                   card={c}
                   count={deck.slots[c.code] ?? 0}
-                  limit={deckLimit(c)}
+                  limit={cardLimit(c, hero, rules)}
+                  canAdd={canAdd(c)}
+                  owned={tracking ? (copies.get(printingKey(c)) ?? 0) : null}
+                  extra={isHeroExtra(c, deck.aspects)}
                   onOpen={() => setOpenCode(c.code)}
                   onChange={(n) => setCount(c.code, n)}
                 />
@@ -326,6 +371,22 @@ export default function DeckEditorPage() {
             </ul>
           )}
 
+          {warnings.length > 0 && (
+            <details className="rounded-xl border-2 border-ink bg-amber-soft p-3 text-sm">
+              <summary className="cursor-pointer font-bold">
+                Tu colección no alcanza para {warnings.length}{" "}
+                {warnings.length === 1 ? "carta" : "cartas"}
+              </summary>
+              <ul className="mt-2 space-y-1">
+                {warnings.map((msg) => (
+                  <li key={msg}>{msg}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          <CostCurve entries={deckCards.map((c) => ({ cost: c.cost, count: deck.slots[c.code] ?? 0 }))} />
+
           <div>
             <h2 className="mb-1 font-display text-xl uppercase tracking-wide">
               Cartas del héroe ({sum(heroCards)})
@@ -336,7 +397,7 @@ export default function DeckEditorPage() {
                   key={c.code}
                   card={c}
                   count={deck.slots[c.code]}
-                  limit={c.quantity ?? 1}
+                  canAdd={false}
                   fixed
                   onOpen={() => setOpenCode(c.code)}
                   onChange={() => {}}
@@ -359,7 +420,7 @@ export default function DeckEditorPage() {
                     key={c.code}
                     card={c}
                     count={deck.slots[c.code]}
-                    limit={deckLimit(c)}
+                    canAdd={canAdd(c)}
                     fixed={false}
                     onOpen={() => setOpenCode(c.code)}
                     onChange={(n) => setCount(c.code, n)}
