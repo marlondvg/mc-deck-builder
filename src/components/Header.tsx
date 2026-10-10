@@ -4,19 +4,8 @@ import { useAuth } from "../lib/auth";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-[10px] px-4 py-2.5 text-[15px] font-bold transition ${
-    isActive ? "bg-amber text-ink" : "text-petrol-muted hover:text-white"
+    isActive ? "bg-red text-white" : "text-ink hover:text-red"
   }`;
-
-function LogoMark() {
-  return (
-    <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-amber">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-        <rect x="4" y="6" width="12" height="15" rx="2" />
-        <path d="M8 3h10a2 2 0 0 1 2 2v12" />
-      </svg>
-    </span>
-  );
-}
 
 export default function Header() {
   const { username, logout } = useAuth();
@@ -35,11 +24,10 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-20 border-b-[3px] border-ink bg-petrol">
+    <header className="sticky top-0 z-20 border-b-[3px] border-ink bg-white">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-3 px-4 py-3.5 sm:px-10">
-        <Link to="/" className="flex items-center gap-3 no-underline">
-          <LogoMark />
-          <span className="font-display text-[28px] tracking-wide text-white sm:text-[32px]">
+        <Link to="/" className="no-underline">
+          <span className="font-display text-[28px] tracking-wide text-red sm:text-[32px]">
             MC DECK BUILDER
           </span>
         </Link>
@@ -53,25 +41,25 @@ export default function Header() {
 
         <div ref={menuRef}>
           {username ? (
-            <div className="relative border-l-2 border-white/20 pl-5">
+            <div className="relative border-l-2 border-ink/15 pl-5">
               <button
                 onClick={() => setOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={open}
                 aria-label="Menú de cuenta"
-                className="flex min-h-12 items-center gap-2.5 rounded-full border-2 border-amber bg-petrol-dark py-1 pl-1 pr-3.5 shadow-comic-sm"
+                className="flex min-h-12 items-center gap-2.5 rounded-full border-2 border-red bg-white py-1 pl-1 pr-3.5 shadow-comic-sm"
               >
-                <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 border-ink bg-amber">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 border-ink bg-red">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <circle cx="12" cy="8" r="4" />
                     <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
                   </svg>
                 </span>
                 <span className="flex flex-col text-left leading-tight">
-                  <span className="text-[11px] font-bold tracking-[0.14em] text-amber">MI CUENTA</span>
-                  <span className="text-[15px] font-bold text-white">{username}</span>
+                  <span className="text-[11px] font-bold tracking-[0.14em] text-red">MI CUENTA</span>
+                  <span className="text-[15px] font-bold text-ink">{username}</span>
                 </span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
@@ -103,7 +91,7 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link to="/login" className="btn-primary">
+            <Link to="/login" className="btn-primary bg-red text-white">
               Iniciar sesión
             </Link>
           )}

@@ -30,6 +30,8 @@
   --color-amber: #ffb703;
   --color-amber-soft: #fff1cc;
   --color-danger: #b3161b;
+  /* Comic-book red for the header (red letters on white). */
+  --color-red: #e62429;
 
   /* Aspect colors */
   --color-aggression: #c8161d;
